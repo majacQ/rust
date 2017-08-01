@@ -21,6 +21,9 @@ use std::any::TypeId;
 
 struct A;
 struct Test;
+struct ContainsRef<'a>{
+    field: &'a str
+}
 
 pub fn main() {
     assert_eq!(TypeId::of::<other1::A>(), other1::id_A());
@@ -32,6 +35,7 @@ pub fn main() {
     assert_eq!(TypeId::of::<other1::G>(), other1::id_G());
     assert_eq!(TypeId::of::<other1::H>(), other1::id_H());
     assert_eq!(TypeId::of::<other1::I>(), other1::id_I());
+    assert_eq!(TypeId::of::<other1::J>(), other1::id_J());
 
     assert_eq!(TypeId::of::<other2::A>(), other2::id_A());
     assert_eq!(TypeId::of::<other2::B>(), other2::id_B());
@@ -41,12 +45,14 @@ pub fn main() {
     assert_eq!(TypeId::of::<other2::F>(), other2::id_F());
     assert_eq!(TypeId::of::<other2::G>(), other2::id_G());
     assert_eq!(TypeId::of::<other2::H>(), other2::id_H());
-    assert_eq!(TypeId::of::<other1::I>(), other2::id_I());
+    assert_eq!(TypeId::of::<other2::I>(), other2::id_I());
+    assert_eq!(TypeId::of::<other2::J>(), other2::id_J());
 
     assert_eq!(other1::id_F(), other2::id_F());
     assert_eq!(other1::id_G(), other2::id_G());
     assert_eq!(other1::id_H(), other2::id_H());
     assert_eq!(other1::id_I(), other2::id_I());
+    assert_eq!(other1::id_J(), other2::id_J());
 
     assert_eq!(TypeId::of::<isize>(), other2::foo::<isize>());
     assert_eq!(TypeId::of::<isize>(), other1::foo::<isize>());
@@ -91,4 +97,12 @@ pub fn main() {
     // Check fn pointer against collisions
     assert!(TypeId::of::<fn(fn(A) -> A) -> A>() !=
             TypeId::of::<fn(fn() -> A, A) -> A>());
+
+    // non-static lifetimes are OK but ignored
+    fn non_static<'a>(arg: &'a str) {
+        assert_eq!(TypeId::of::<&'a ContainsRef>(),
+                   TypeId::of::<&'static ContainsRef>());
+    }
+    non_static(&String::from("rah"));
+
 }

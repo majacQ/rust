@@ -336,8 +336,9 @@ impl Any+Send {
 /// inside but does allow basic operations such as cloning, comparison,
 /// printing, and showing.
 ///
-/// A `TypeId` is currently only available for types which ascribe to `'static`,
-/// but this limitation may be removed in the future.
+/// `TypeId`s do not take lifetimes into account: a `TypeId` for
+/// `SomeStruct<'a, 'b>` will be the same as for `SomeStruct<'b, 'a>`, even
+/// though they're different types.
 ///
 /// While `TypeId` implements `Hash`, `PartialOrd`, and `Ord`, it is worth
 /// noting that the hashes and ordering will vary between Rust releases. Beware

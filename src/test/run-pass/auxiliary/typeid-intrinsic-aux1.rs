@@ -25,6 +25,8 @@ pub type I = Box<Fn()>;
 pub type I32Iterator = Iterator<Item=i32>;
 pub type U32Iterator = Iterator<Item=u32>;
 
+pub struct J<'a>(&'a str);
+
 pub fn id_A() -> TypeId { TypeId::of::<A>() }
 pub fn id_B() -> TypeId { TypeId::of::<B>() }
 pub fn id_C() -> TypeId { TypeId::of::<C>() }
@@ -34,6 +36,7 @@ pub fn id_F() -> TypeId { TypeId::of::<F>() }
 pub fn id_G() -> TypeId { TypeId::of::<G>() }
 pub fn id_H() -> TypeId { TypeId::of::<H>() }
 pub fn id_I() -> TypeId { TypeId::of::<I>() }
+pub fn id_J() -> TypeId { TypeId::of::<J>() }
 
 pub fn foo<T: Any>() -> TypeId { TypeId::of::<T>() }
 
