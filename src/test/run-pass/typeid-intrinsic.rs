@@ -100,8 +100,8 @@ pub fn main() {
 
     // non-static lifetimes are OK but ignored
     fn non_static<'a>(arg: &'a str) {
-        assert_eq!(TypeId::of::<&'a ContainsRef>(),
-                   TypeId::of::<&'static ContainsRef>());
+        assert_eq!(TypeId::of::<ContainsRef<'a>>(),
+                   TypeId::of::<ContainsRef<'static>>());
     }
     non_static(&String::from("rah"));
 
