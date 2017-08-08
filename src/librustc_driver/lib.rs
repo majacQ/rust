@@ -714,8 +714,8 @@ fn handle_explain(code: &str,
     } else {
         format!("E{0:0>4}", code)
     };
-    match descriptions.find_description(&normalised) {
-        Some(ref description) => {
+    match descriptions.lookup(&normalised) {
+        Some(Some(ref description)) => {
             let mut is_in_code_block = false;
             let mut text = String::new();
 
@@ -740,10 +740,13 @@ fn handle_explain(code: &str,
             } else {
                 print!("{}", text);
             }
-        }
-        None => {
+        },
+        Some(None) => {
             early_error(output, &format!("no extended information for {}", code));
-        }
+        },
+        None => {
+            early_error(output, &format!("error code {} does not exist", code));
+        },
     }
 }
 

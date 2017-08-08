@@ -181,31 +181,34 @@ pub fn expand_build_diagnostic_array<'cx>(ecx: &'cx mut ExtCtxt,
     let (count, expr) =
         ecx.parse_sess.registered_diagnostics.with_lock(|diagnostics| {
             let descriptions: Vec<P<ast::Expr>> =
-                diagnostics.iter().filter_map(|(&code, info)| {
-                    info.description.map(|description| {
-                        ecx.expr_tuple(span, vec![
-                            ecx.expr_str(span, code),
-                            ecx.expr_str(span, description)
-                        ])
-                    })
+                diagnostics.iter().map(|(&code, info)| {
+                    ecx.expr_tuple(span, vec![
+                        ecx.expr_str(span, code),
+                        match info.description {
+                            Some(desc) => ecx.expr_some(span, ecx.expr_str(span, desc)),
+                            None => ecx.expr_none(span)
+                        }
+                    ])
                 }).collect();
             (descriptions.len(), ecx.expr_vec(span, descriptions))
         });
 
     let static_ = ecx.lifetime(span, keywords::StaticLifetime.ident());
+
     let ty_str = ecx.ty_rptr(
         span,
         ecx.ty_ident(span, ecx.ident_of("str")),
         Some(static_),
         ast::Mutability::Immutable,
     );
+    let ty_opt_str = ecx.ty_option(ty_str.clone());
 
     let ty = ecx.ty(
         span,
         ast::TyKind::Array(
             ecx.ty(
                 span,
-                ast::TyKind::Tup(vec![ty_str.clone(), ty_str])
+                ast::TyKind::Tup(vec![ty_str, ty_opt_str])
             ),
             ecx.expr_usize(span, count),
         ),
