@@ -1,0 +1,128 @@
+Things to do---
+
+* feature gate for unused_must_use
+* comparison operators to unused_must_use
+* error format oneline https://github.com/rust-lang/rust/issues/42653
+
+* https://github.com/rust-lang/rust/issues/43149 probe-for-method isn't even checking types very well)
+* --explain should distinguish between no-explanation and code-does-not-exist; similarly, the error index should at least be able to document what codes don't exist; there is a __diagnostic_used! macro, so this info should be _available_ ... I think it's happening in libsyntax diagnostics plugin `expand_build_diagnostic_array`, around line 199, that filter_map: it'll filter out the cases where info.description is None, but I don't think it should: we should keep it as an option to disambiguate between "no such error" and "error does not exist"
+
+
+* rustdoc output test binary: https://github.com/rust-lang/rust/issues/43029 It looks like it currently runs a binary in a TempDir—but maybe it's one per test?! see librustdoc/test.rs L241
+
+* print feature gates (feature_gate.rs) https://github.com/rust-lang/rust/issues/38768
+* https://github.com/rust-lang/rust/issues/41941 can't weaken group deny to warn (seems pretty bad) ... um, warnings is kind of a non-generalizable hack; I don't know how to fix this systematically right now. Ah, well, we can inspect whether the source of the lint was from a "warnings"-named attr or cmd-line flag; I think that should suffice
+* https://github.com/rust-lang/rust/issues/41963 incorrect suggestion in error when accessing field on raw pointer (comment on strategy)
+* man page date https://github.com/rust-lang/rust/issues/25689 https://github.com/rust-lang/rust/blob/6270257f4e/src/bootstrap/dist.rs#L438-L439
+* docs heart issue https://github.com/rust-lang/rust/issues/36998
+* link to specific impls in rustdoc https://github.com/rust-lang/rust/issues/23552 (from playing around with "Inspect Element", this should be easy: just add an id to the <h3 class="impl"> and make the word "impl" a link to that ID; and, remove white background color for .in-band in static/styles/main.css after researching what in-band is so as to be sure not to break shit)
+* impl source links https://github.com/rust-lang/rust/issues/24484#issuecomment-96286188
+* mentor (incremental comp)?? https://github.com/rust-lang/rust/issues/42513
+* incremental comp roadmap notes: https://github.com/rust-lang/rust-roadmap/issues/4
+* moar Levenstein suggestions https://github.com/rust-lang/rust/issues/30197#issuecomment-272618423
+
+* it'd be nice if "typeof(4)" triggered E0516, and explained what the user actually wanted, which was the instrincs (which is unstable but anyway)
+* Emacs rust-mode could keyword union and do https://github.com/rust-lang/rust-mode/issues/203 the way Ruby does it (but check for "! *(" in front) 
+* functional record update syntax for struct-like enum variants?? (correct my diagnostic explaination claiming otherwise if that gets in)
+* typed pretty printing  https://github.com/rust-lang/rust/issues/30924
+* command line list features https://github.com/rust-lang/rust/issues/38768
+* disable color code if not tty https://github.com/rust-lang/rust/issues/41180 (I think we already do this?—maybe explain to the guy that the color is on stderr, not stdout?)
+* JSON test output https://github.com/rust-lang/rust/issues/43381
+* elide inner type info https://github.com/rust-lang/rust/issues/43354
+* attributes on binary expressions https://github.com/rust-lang/rust/issues/43279
+* https://github.com/rust-lang/rust/issues/42375 underscore fns dead code
+* merge conflict marker https://github.com/rust-lang/rust/issues/32059
+  I think we could put lineno <span>s in the rendered source and then put numbers on using CSS ::before pseudo-elements?—this is different from the line-nos that already exist when rustdoc makes an HTML version of a source file, but maybe that's OK
+* gaurd type trait impls https://github.com/rust-lang/rust/issues/24372
+* rustdoc links https://github.com/rust-lang/rust/issues/24484
+* clone_from efficiency https://github.com/rust-lang/rust/issues/28481
+* formatter align stabilization https://github.com/rust-lang/rust/issues/27726
+* non_snake_case skip no_mangle https://github.com/rust-lang/rust/issues/31924
+* rustbuild multiple tmps? https://github.com/rust-lang/rust/issues/34586
+* wrong better candidate https://github.com/rust-lang/rust/issues/42944
+* invalid pretty code https://github.com/rust-lang/rust/issues/42213
+* as_str for Split iter https://github.com/rust-lang/rust/issues/43090
+* ditch make for tests https://github.com/rust-lang/rust/issues/40713
+* hint when trying to use Box<Trait> as Trait https://github.com/rust-lang/rust/issues/42356 (playground example: https://play.rust-lang.org/?gist=8c3e46a8a40de82d4035074e39f577ab&version=nightly)
+* suggested <unnamed> https://github.com/rust-lang/rust/issues/43189
+* bad span for attributes https://github.com/rust-lang/rust/issues/42641
+* wrong better candidate https://github.com/rust-lang/rust/issues/42944
+* display on a Path https://github.com/rust-lang/rust/issues/38997
+* rustdoc TOML highlighting https://github.com/rust-lang/rust/issues/43165
+* rustdoc ordering https://github.com/rust-lang/rust/issues/8552
+* rustdoc line numbers https://github.com/rust-lang/rust/issues/22878
+* JSON time-passes https://github.com/rust-lang/rust/issues/36233
+* rustdoc Copy https://github.com/rust-lang/rust/issues/25893
+* remaining error codes https://github.com/rust-lang/rust/issues/34588
+* don't suggest unwrap for Some(T) https://github.com/rust-lang/rust/issues/42746
+* integer suggestions https://github.com/rust-lang/rust/issues/42765
+* lint pass for must_use https://github.com/rust-lang/rust/issues/14407
+* lint pass for doc attributes https://github.com/rust-lang/rust/issues/14408
+
+* incremental compilation??
+* trait documentation https://github.com/rust-lang/rust/issues/42440
+* https://github.com/rust-lang/rust/issues/41866 AsRef??
+* finish verbose Command Debug https://github.com/rust-lang/rust/issues/42200
+* make pretty-print aware of vec!: https://github.com/rust-lang/rust/pull/37476#issuecomment-257153978
+* doc comments in match arms: https://github.com/rust-lang/rust/issues/21823
+* future deprecation https://github.com/rust-lang/rust/issues/30785
+* allow unused in macro https://github.com/rust-lang/rust/issues/24580
+* pretty-printer extra newline
+
+
+rustdoc help: https://quietmisdreavus.net/code/2017/06/21/a-whirlwind-tour-of-rustdoc/
+
+
+
+-----
+
+error[E0277]: the trait bound `{integer}: std::iter::Iterator` is not satisfied
+ --> scratch.rs:2:5
+  |
+2 |     for m in 3 { ; }
+  |     ^^^^^^^^^^^^^^^^ `{integer}` is not an iterator; maybe try calling `.iter()` or a similar method
+
+(from https://github.com/rust-lang/rust/issues/34353); we know damned well that integers don't have .iter(); why suggest it??!
+
+this is done through a rustc_on_unimplemented attr; not easy to tweak
+
+
+
+7 | fn this_function_expects_a_double_option<T>(d: DoubleOption<T>) {
+  |                                                                 - help: possibly return type missing here? `-> bool `
+8 |     false
+  |     ^^^^^ expected (), found bool
+  |
+  = note: expected type `()`
+             found type `bool`
+
+(help is a span_label; maybe not accessible to tools??)
+
+librustc_typeck/check/mod.rs
+4305:                                    "possibly return type missing here?",
+4308:                err.span_label(span, "possibly return type missing here?");
+
+
+
+
+
+
+----
+zmd@ExpectedReturn:~/Code/rust$ rustc scratch.rs 
+error[E0595]: closure cannot assign to immutable local variable `x`
+  --> scratch.rs:26:17
+   |
+24 |     let x = 3;
+   |         - consider changing this to `mut x`
+25 | 
+26 |     let mut a = || { x += 1; x };
+   |                 ^^ cannot borrow mutably
+
+error: aborting due to previous error
+
+zmd@ExpectedReturn:~/Code/rust$ rustc scratch.rs --error-format json
+{"message":"closure cannot assign to immutable local variable `x`","code":{"code":"E0595","explanation":null},"level":"error","spans":[{"file_name":"scratch.rs","byte_start":453,"byte_end":455,"line_start":26,"line_end":26,"column_start":17,"column_end":19,"is_primary":true,"text":[{"text":"    let mut a = || { x += 1; x };","highlight_start":17,"highlight_end":19}],"label":"cannot borrow mutably","suggested_replacement":null,"expansion":null},{"file_name":"scratch.rs","byte_start":429,"byte_end":430,"line_start":24,"line_end":24,"column_start":9,"column_end":10,"is_primary":false,"text":[{"text":"    let x = 3;","highlight_start":9,"highlight_end":10}],"label":"consider changing this to `mut x`","suggested_replacement":null,"expansion":null}],"children":[],"rendered":null}
+{"message":"aborting due to previous error","code":null,"level":"error","spans":[],"children":[],"rendered":null}
+
+That `suggested_replacement: null` in the JSON?—is bad, because then tools can't 
+--
