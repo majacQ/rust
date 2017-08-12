@@ -10,6 +10,7 @@ Things to do---
 
 * rustdoc output test binary: https://github.com/rust-lang/rust/issues/43029 It looks like it currently runs a binary in a TempDir—but maybe it's one per test?! see librustdoc/test.rs L241
 
+* steal: https://github.com/rust-lang/rust/issues/15872
 * print feature gates (feature_gate.rs) https://github.com/rust-lang/rust/issues/38768
 * https://github.com/rust-lang/rust/issues/41941 can't weaken group deny to warn (seems pretty bad) ... um, warnings is kind of a non-generalizable hack; I don't know how to fix this systematically right now. Ah, well, we can inspect whether the source of the lint was from a "warnings"-named attr or cmd-line flag; I think that should suffice
 * https://github.com/rust-lang/rust/issues/41963 incorrect suggestion in error when accessing field on raw pointer (comment on strategy)
