@@ -3,18 +3,18 @@ Things to do---
 * feature gate for unused_must_use
 * comparison operators to unused_must_use
 * error format oneline https://github.com/rust-lang/rust/issues/42653
+* PartialEq between reference and non-reference types references using specialization https://github.com/rust-lang/rfcs/issues/1332
+* print feature gates (feature_gate.rs) https://github.com/rust-lang/rust/issues/38768
+* man page date https://github.com/rust-lang/rust/issues/25689 https://github.com/rust-lang/rust/blob/6270257f4e/src/bootstrap/dist.rs#L438-L439
 
 * https://github.com/rust-lang/rust/issues/43149 probe-for-method isn't even checking types very well)
 * --explain should distinguish between no-explanation and code-does-not-exist; similarly, the error index should at least be able to document what codes don't exist; there is a __diagnostic_used! macro, so this info should be _available_ ... I think it's happening in libsyntax diagnostics plugin `expand_build_diagnostic_array`, around line 199, that filter_map: it'll filter out the cases where info.description is None, but I don't think it should: we should keep it as an option to disambiguate between "no such error" and "error does not exist"
 
 
 * rustdoc output test binary: https://github.com/rust-lang/rust/issues/43029 It looks like it currently runs a binary in a TempDir—but maybe it's one per test?! see librustdoc/test.rs L241
-
 * steal: https://github.com/rust-lang/rust/issues/15872
-* print feature gates (feature_gate.rs) https://github.com/rust-lang/rust/issues/38768
 * https://github.com/rust-lang/rust/issues/41941 can't weaken group deny to warn (seems pretty bad) ... um, warnings is kind of a non-generalizable hack; I don't know how to fix this systematically right now. Ah, well, we can inspect whether the source of the lint was from a "warnings"-named attr or cmd-line flag; I think that should suffice
 * https://github.com/rust-lang/rust/issues/41963 incorrect suggestion in error when accessing field on raw pointer (comment on strategy)
-* man page date https://github.com/rust-lang/rust/issues/25689 https://github.com/rust-lang/rust/blob/6270257f4e/src/bootstrap/dist.rs#L438-L439
 * docs heart issue https://github.com/rust-lang/rust/issues/36998
 * link to specific impls in rustdoc https://github.com/rust-lang/rust/issues/23552 (from playing around with "Inspect Element", this should be easy: just add an id to the <h3 class="impl"> and make the word "impl" a link to that ID; and, remove white background color for .in-band in static/styles/main.css after researching what in-band is so as to be sure not to break shit)
 * impl source links https://github.com/rust-lang/rust/issues/24484#issuecomment-96286188
@@ -44,7 +44,7 @@ Things to do---
 * invalid pretty code https://github.com/rust-lang/rust/issues/42213
 * as_str for Split iter https://github.com/rust-lang/rust/issues/43090
 * ditch make for tests https://github.com/rust-lang/rust/issues/40713
-* hint when trying to use Box<Trait> as Trait https://github.com/rust-lang/rust/issues/42356 (playground example: https://play.rust-lang.org/?gist=8c3e46a8a40de82d4035074e39f577ab&version=nightly)
+* hint when trying to use Box<Trait> as Trait https://github.com/rust-lang/rust/issues/42356 (playground example: https://play.rust-lang.org/?gist=8c3e46a8a40de82d4035074e39f577ab&version=nightly) (compare to Rc, which does auto-deref methods??)
 * suggested <unnamed> https://github.com/rust-lang/rust/issues/43189
 * bad span for attributes https://github.com/rust-lang/rust/issues/42641
 * wrong better candidate https://github.com/rust-lang/rust/issues/42944
