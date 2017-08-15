@@ -3,7 +3,11 @@ Things to do---
 * feature gate for unused_must_use
 * comparison operators to unused_must_use
 * error format oneline https://github.com/rust-lang/rust/issues/42653
+* https://github.com/rust-lang/rust/issues/43871 seems similar to what I implemented in https://github.com/rust-lang/rust/pull/43178/files
 
+* exercise: minimize example of Jubiliant borrow error when trying to make tablestate a substruct (I didn't understand why the borrow checker objected! I should understand!)
+
+* this is pretty similar to the https://github.com/rust-lang/rust/issues/43871
 * print feature gates (feature_gate.rs) https://github.com/rust-lang/rust/issues/38768
 * man page date https://github.com/rust-lang/rust/issues/25689 https://github.com/rust-lang/rust/blob/6270257f4e/src/bootstrap/dist.rs#L438-L439
 
