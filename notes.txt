@@ -9,6 +9,7 @@ Things to do---
 * exercise: minimize example of Jubiliant borrow error when trying to make tablestate a substruct (I didn't understand why the borrow checker objected! I should understand!)
 
 * "add ... to the crate attributes to enable" could be a Suggestion (it would have to find a suitable span at the crate root to insert at)
+* feature_gate span could point at actual attribute rather than the fn (`.find(|item| { attr.check_name(name)`)
 * this is pretty similar to the https://github.com/rust-lang/rust/issues/43871
 * print feature gates (feature_gate.rs) https://github.com/rust-lang/rust/issues/38768
 * man page date https://github.com/rust-lang/rust/issues/25689 https://github.com/rust-lang/rust/blob/6270257f4e/src/bootstrap/dist.rs#L438-L439
