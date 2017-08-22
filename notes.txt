@@ -4,6 +4,7 @@ Things to do---
 * comparison operators to unused_must_use
 * error format oneline https://github.com/rust-lang/rust/issues/42653
 * https://github.com/rust-lang/rust/issues/43871 seems similar to what I implemented in https://github.com/rust-lang/rust/pull/43178/files
+* https://github.com/rust-lang/rust/issues/43927 derive error per attribute
 
 
 * exercise: minimize example of Jubiliant borrow error when trying to make tablestate a substruct (I didn't understand why the borrow checker objected! I should understand!)
