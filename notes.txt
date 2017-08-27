@@ -1,5 +1,6 @@
 Things to do---
 
+* audit changes to my lint-group fix test expectations in recent eager lint group refactoring
 * comparison operators to unused_must_use (should just be rebase)
 * error format oneline https://github.com/rust-lang/rust/issues/42653
 * https://github.com/rust-lang/rust/issues/43871 seems similar to what I implemented in https://github.com/rust-lang/rust/pull/43178/files
