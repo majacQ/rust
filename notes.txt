@@ -1,11 +1,28 @@
 Things to do---
 
+* comparison operators to unused_must_use should use attributes—but I don't understand; I thought I had a promising approach, but this is not working and my heart is broken—
+
+INFO:rustc_typeck::check::op: ZMD check_overloaded_binop(expr.id=9, lhs_ty={integer}, is_assign=No)
+INFO:rustc_typeck::check::op: ZMD write_method_call with hir_id HirId { owner: DefIndex(3), local_id: ItemLocalId(3) } and method MethodCallee { def_id: DefId { krate: CrateNum(2), node: DefIndex(1029) => core/d00692e::cmp[0
+]::PartialEq[0]::eq[0] }, substs: Slice([{integer}, _]), sig: ([&{integer}, &_]; variadic: false)->bool }
+INFO:rustc_lint::unused: ZMD DEBUG A: linting expr.id: 9
+INFO:rustc_lint::unused: ZMD fn_must_us is on
+INFO:rustc_lint::unused: ZMD matched expr.node to ExprBinary! lookup up expr's HIR ID HirId { owner: DefIndex(3), local_id: ItemLocalId(3) } in type-dep table
+INFO:rustc_lint::unused: ZMD lhs is expr(7: 2), rhs is expr(8: 3)
+INFO:rustc_lint::unused: ZMD some_def is None
+INFO:rustc_lint::unused: ZMD in Binary branch type dependent defs are LocalTableInContext { local_id_root: Some(DefId { krate: CrateNum(0), node: DefIndex(3) => sclog/8cd878b::main[0] }), data: {} }
+
+* --explain should distinguish between no-explanation and code-does-not-exist; similarly, the error index should at least be able to document what codes don't exist; there is a __diagnostic_used! macro, so this info should be _available_ ... I think it's happening in libsyntax diagnostics plugin `expand_build_diagnostic_array`, around line 199, that filter_map: it'll filter out the cases where info.description is None, but I don't think it should: we should keep it as an option to disambiguate between "no such error" and "error does not exist" (can't figure out what's wrong with my proc-macro fix!!! aughgrrr)
+
+* releasey note for unused_results regression-turned-fix
+* unstable book chapter for fn_must_use
+
 * audit changes to my lint-group fix test expectations in recent eager lint group refactoring
-* comparison operators to unused_must_use (should just be rebase)
+
 * error format oneline https://github.com/rust-lang/rust/issues/42653
 * https://github.com/rust-lang/rust/issues/43871 seems similar to what I implemented in https://github.com/rust-lang/rust/pull/43178/files
 
-* --explain should distinguish between no-explanation and code-does-not-exist; similarly, the error index should at least be able to document what codes don't exist; there is a __diagnostic_used! macro, so this info should be _available_ ... I think it's happening in libsyntax diagnostics plugin `expand_build_diagnostic_array`, around line 199, that filter_map: it'll filter out the cases where info.description is None, but I don't think it should: we should keep it as an option to disambiguate between "no such error" and "error does not exist" (can't figure out what's wrong with my proc-macro fix!!! aughgrrr)
+
 * 599 lacks description
 
 * https://github.com/rust-lang/rust/issues/44136
