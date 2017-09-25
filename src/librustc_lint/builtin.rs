@@ -566,11 +566,54 @@ impl<'a, 'tcx> LateLintPass<'a, 'tcx> for MissingDebugImplementations {
             debug!("{:?}", self.impling_types);
         }
 
-        if !self.impling_types.as_ref().unwrap().contains(&item.id) {
-            cx.span_lint(MISSING_DEBUG_IMPLEMENTATIONS,
-                         item.span,
-                         "type does not implement `fmt::Debug`; consider adding #[derive(Debug)] \
-                          or a manual implementation")
+        let impling_types = self.impling_types.as_ref()
+            .expect("impling types cache set should be populated");
+        if !impling_types.contains(&item.id) {
+            let mut err = cx.struct_span_lint(MISSING_DEBUG_IMPLEMENTATIONS,
+                                              item.span,
+                                              "type does not implement `fmt::Debug`");
+            // only suggest `#[derive(Debug)]` if members are `Debug`
+            let derivable = match item.node {
+                hir::ItemStruct(variant_data, _) => {
+                    variant_data.fields().iter()
+                        .map(|field| {
+                            field.ty.ty_to_def_id().map(|ty_def| {
+                                cx.tcx.hir.as_local_node_id(ty_def)
+                            })
+                        })
+                        .all(|node_id_maybe| {
+                            node_id_maybe.map_or(false, |node_id| {
+                                impling_types.contains(&node_id)
+                            })
+                        })
+                },
+                hir::ItemEnum(enum_def, _) => {
+                    enum_def.variants.iter().all(|variant| {
+                        match variant.node.data {
+                            hir::VariantData::Struct(ref fields, _) |
+                            hir::VariantData::Tuple(ref fields, _) => {
+                                fields.iter()
+                                    .map(|field| {
+                                        field.ty.ty_to_def_id().map(|ty_def| {
+                                            cx.tcx.hir.as_local_node_id(ty_def)
+                                        })
+                                    })
+                                    .all(|node_id_maybe| {
+                                        node_id_maybe.map_or(false, |node_id| {
+                                            impling_types.contains(&node_id)
+                                        })
+                                    })
+                            }
+                            hir::VariantData::Unit => true,
+                        }
+                    })
+                },
+                hir::ItemUnion(..) => false, // unions can't derive `Debug`
+                _ => bug!("unexpected non-ADT while checking Debug derivability")
+            }
+            if derivable {
+                err.note("try `#[derive(Debug)]`");
+            }
         }
     }
 }
