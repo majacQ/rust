@@ -590,11 +590,19 @@ impl<'a, 'tcx> LateLintPass<'a, 'tcx> for MissingDebugImplementations {
                 _ => bug!("unexpected non-ADT while checking Debug derivability")
             };
             if derivable {
-                let signature_span = cx.tcx.sess.codemap().def_span(item.span);
-                let signature_snippet = cx.tcx.sess.codemap()
-                    .span_to_snippet(signature_span).expect("should be able to get snippet");
-                let suggestion = format!("#[derive(Debug)] {}", signature_snippet);
-                err.span_suggestion(signature_span, "try deriving `Debug`", suggestion);
+                let msg = "try deriving `Debug`";
+                info!("ZMD DEBUG A item: {:#?} attrs: {:?}", item, item.attrs);
+                if let Some(derive_attr) = attr::find_by_name(&item.attrs[..], "derive") {
+                    info!("ZMD DEBUG B: {:?}", derive_attr);
+                    let trait_list_span = cx.tcx.sess.codemap()
+                        .span_until_after_char(derive_attr.span, '(');
+                    let insertion_span = trait_list_span.with_hi(trait_list_span.data().lo);
+                    err.span_suggestion(insertion_span, msg, "Debug, ".to_owned());
+                } else {
+                    let insertion_span = item.span.with_hi(item.span.data().lo);
+                    err.span_suggestion(insertion_span, msg, "#[derive(Debug)]\n".to_owned());
+                }
+
             }
             err.emit();
         }
