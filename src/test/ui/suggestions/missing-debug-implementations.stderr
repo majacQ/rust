@@ -1,0 +1,24 @@
+error: type does not implement `fmt::Debug`
+ --> $DIR/missing-debug-implementations.rs:6:1
+  |
+6 | pub struct Discovery {}
+  | --------------------^^^
+  | |
+  | help: try deriving `Debug`: `#[derive(Debug)] pub struct Discovery`
+  |
+note: lint level defined here
+ --> $DIR/missing-debug-implementations.rs:2:9
+  |
+2 | #![deny(missing_debug_implementations)]
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: type does not implement `fmt::Debug`
+  --> $DIR/missing-debug-implementations.rs:8:1
+   |
+8  | / pub struct Shenzhou {
+9  | |     escape_pods: [Pod]
+10 | | }
+   | |_^
+
+error: aborting due to 2 previous errors
+

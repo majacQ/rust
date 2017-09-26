@@ -566,11 +566,37 @@ impl<'a, 'tcx> LateLintPass<'a, 'tcx> for MissingDebugImplementations {
             debug!("{:?}", self.impling_types);
         }
 
-        if !self.impling_types.as_ref().unwrap().contains(&item.id) {
-            cx.span_lint(MISSING_DEBUG_IMPLEMENTATIONS,
-                         item.span,
-                         "type does not implement `fmt::Debug`; consider adding #[derive(Debug)] \
-                          or a manual implementation")
+        let impling_types = self.impling_types.as_ref()
+            .expect("impling types cache set should be populated");
+        if !impling_types.contains(&item.id) {
+            let mut err = cx.struct_span_lint(MISSING_DEBUG_IMPLEMENTATIONS,
+                                              item.span,
+                                              "type does not implement `fmt::Debug`");
+            // only suggest `#[derive(Debug)]` if members are `Debug`
+            let derivable = match item.node {
+                hir::ItemStruct(ref variant_data, _) => {
+                    variant_data.fields().iter()
+                        .map(|field| field.ty.id)
+                        .all(|id| impling_types.contains(&id))
+                },
+                hir::ItemEnum(ref enum_def, _) => {
+                    enum_def.variants.iter().all(|variant| {
+                        variant.node.data.fields().iter()
+                        .map(|field| field.ty.id)
+                        .all(|id| impling_types.contains(&id))
+                    })
+                },
+                hir::ItemUnion(..) => false, // unions can't derive `Debug`
+                _ => bug!("unexpected non-ADT while checking Debug derivability")
+            };
+            if derivable {
+                let signature_span = cx.tcx.sess.codemap().def_span(item.span);
+                let signature_snippet = cx.tcx.sess.codemap()
+                    .span_to_snippet(signature_span).expect("should be able to get snippet");
+                let suggestion = format!("#[derive(Debug)] {}", signature_snippet);
+                err.span_suggestion(signature_span, "try deriving `Debug`", suggestion);
+            }
+            err.emit();
         }
     }
 }
