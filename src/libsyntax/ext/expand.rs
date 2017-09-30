@@ -308,8 +308,8 @@ impl<'a, 'b> MacroExpander<'a, 'b> {
                         err.emit();
                     }
 
-                    let item = self.fully_configure(item)
-                        .map_attrs(|mut attrs| { attrs.retain(|a| a.path != "derive"); attrs });
+                    let item = self.fully_configure(item);
+
                     let item_with_markers =
                         add_derived_markers(&mut self.cx, item.span(), &traits, item.clone());
                     let derives = derives.entry(invoc.expansion_data.mark).or_insert_with(Vec::new);
@@ -800,11 +800,12 @@ impl<'a, 'b> InvocationCollector<'a, 'b> {
                 attr = Some(legacy_attr_invoc);
                 return attrs;
             }
-
+            info!("in classify_item before proc-mac-en, attrs: {:?}", attrs);
             if self.cx.ecfg.proc_macro_enabled() {
                 attr = find_attr_invoc(&mut attrs);
             }
-            traits = collect_derives(&mut self.cx, &mut attrs);
+            info!("in classify_item after proc-mac-en, attrs {:?}:", attrs);
+            traits = collect_derives(&mut self.cx, &attrs);
             attrs
         });
 

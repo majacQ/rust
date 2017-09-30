@@ -19,29 +19,27 @@ use syntax_pos::Span;
 
 use std::collections::HashSet;
 
-pub fn collect_derives(cx: &mut ExtCtxt, attrs: &mut Vec<ast::Attribute>) -> Vec<ast::Path> {
+pub fn collect_derives(cx: &mut ExtCtxt, attrs: &[ast::Attribute]) -> Vec<ast::Path> {
+    info!("calling `collect_derives` with attrs {:?}", attrs);
     let mut result = Vec::new();
-    attrs.retain(|attr| {
+    for attr in attrs {
         if attr.path != "derive" {
-            return true;
+            continue;
         }
 
         match attr.parse_list(cx.parse_sess,
                               |parser| parser.parse_path_allowing_meta(PathStyle::Mod)) {
             Ok(ref traits) if traits.is_empty() => {
                 cx.span_warn(attr.span, "empty trait list in `derive`");
-                false
             }
             Ok(traits) => {
                 result.extend(traits);
-                true
             }
             Err(mut e) => {
                 e.emit();
-                false
             }
         }
-    });
+    }
     result
 }
 

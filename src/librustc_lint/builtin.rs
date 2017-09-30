@@ -40,6 +40,7 @@ use lint::{LateContext, LintContext, LintArray};
 use lint::{LintPass, LateLintPass, EarlyLintPass, EarlyContext};
 
 use std::collections::HashSet;
+use std::ops::Deref;
 
 use syntax::ast;
 use syntax::attr;
@@ -504,10 +505,19 @@ impl<'a, 'tcx> LateLintPass<'a, 'tcx> for MissingCopyImplementations {
             return;
         }
         if param_env.can_type_implement_copy(cx.tcx, ty, item.span).is_ok() {
-            cx.span_lint(MISSING_COPY_IMPLEMENTATIONS,
-                         item.span,
-                         "type could implement `Copy`; consider adding `impl \
-                          Copy`")
+            let mut err = cx.struct_span_lint(MISSING_COPY_IMPLEMENTATIONS,
+                                              item.span,
+                                              "type could implement `Copy`");
+            info!("attrs on DefId in missing-copy lint: {:?}", cx.tcx.get_attrs(def.did).deref());
+            if let Some(derive_attr) = attr::find_by_name(cx.tcx.get_attrs(def.did).deref(), "derive") {
+                info!("derive attr is {:?}", derive_attr);
+                err.note("add `Copy` to derive attr");
+            } else {
+                let insertion_span = item.span.with_hi(item.span.data().lo);
+                err.span_suggestion(insertion_span, "try deriving `Copy`",
+                                    "#[derive(Copy)]\n".to_owned());
+            }
+            err.emit();
         }
     }
 }
