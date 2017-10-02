@@ -548,6 +548,7 @@ impl<'a, 'gcx, 'tcx> InferCtxt<'a, 'gcx, 'tcx> {
                     return;
                 }
                 match obligation.predicate {
+                    info!("ZMD DEBUG A: obligation cause code: {:?}", obligation);
                     ty::Predicate::Trait(ref trait_predicate) => {
                         let trait_predicate =
                             self.resolve_type_vars_if_possible(trait_predicate);
