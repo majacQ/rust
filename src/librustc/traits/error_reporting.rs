@@ -547,8 +547,9 @@ impl<'a, 'gcx, 'tcx> InferCtxt<'a, 'gcx, 'tcx> {
                         .emit();
                     return;
                 }
+                info!("ZMD DEBUG 0: obligation cause code: {:?}", obligation.cause);
                 match obligation.predicate {
-                    info!("ZMD DEBUG A: obligation cause code: {:?}", obligation);
+
                     ty::Predicate::Trait(ref trait_predicate) => {
                         let trait_predicate =
                             self.resolve_type_vars_if_possible(trait_predicate);
@@ -608,6 +609,30 @@ impl<'a, 'gcx, 'tcx> InferCtxt<'a, 'gcx, 'tcx> {
                             // Can't show anything else useful, try to find similar impls.
                             let impl_candidates = self.find_similar_impl_candidates(trait_ref);
                             self.report_similar_impl_candidates(impl_candidates, &mut err);
+                        }
+
+                        if obligation.cause.code == ObligationCauseCode::SizedReturnType {
+                            let fn_body_node_id = obligation.cause.body_id;
+                            info!("ZMD DEBUG A body_id {:?}", fn_body_node_id);
+                            if let Some(hir_node) = self.tcx.hir.find(fn_body_node_id) {
+                                info!("ZMD DEBUG B hir_node {:?}", hir_node);
+                                if let hir::map::Node::NodeExpr(expr) = hir_node {
+                                    info!("ZMD DEBUG C expr {:?}", expr);
+                                    if let hir::ExprBlock(ref block) = expr.node {
+                                        info!("ZMD DEBUG D stmts {:?}", block.stmts);
+                                        info!("ZMD DEBUG E expr {:?}", block.expr);
+                                    }
+                                }
+                            }
+                            // err.span_label(,
+                            //                format!("`{}` is returned here",
+                            //                        trait_ref.self_ty()));
+
+                            // if let Some(ty_def_id) = trait_ref.self_ty().ty_to_def_id() {
+                            //     err.span_note(self.tcx.def_span(ty_def_id),
+                            //                   &format!("`{}` defined here",
+                            //                            trait_ref.self_ty()));
+                            // }
                         }
 
                         err
