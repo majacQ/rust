@@ -2666,15 +2666,16 @@ impl<'a> LoweringContext<'a> {
                         -> hir::Visibility {
         match *v {
             Visibility::Public => hir::Public,
-            Visibility::Crate(_) => hir::Visibility::Crate,
-            Visibility::Restricted { ref path, id } => {
+            Visibility::Crate(span) => hir::Visibility::Crate(span),
+            Visibility::Restricted { ref path, id, span } => {
                 hir::Visibility::Restricted {
                     path: P(self.lower_path(id, path, ParamMode::Explicit, true)),
                     id: if let Some(owner) = explicit_owner {
                         self.lower_node_id_with_owner(id, owner).node_id
                     } else {
                         self.lower_node_id(id).node_id
-                    }
+                    },
+                    span
                 }
             }
             Visibility::Inherited => hir::Inherited,

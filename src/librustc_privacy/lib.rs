@@ -1307,18 +1307,21 @@ impl<'a, 'tcx: 'a> SearchInterfaceForPrivateItemsVisitor<'a, 'tcx> {
                 self.min_visibility = vis;
             }
             if !vis.is_at_least(self.required_visibility, self.tcx) {
+                let privacy_adjective = &item.vis.description();
                 if self.has_pub_restricted || self.has_old_errors {
                     struct_span_err!(self.tcx.sess, self.span, E0445,
-                                     "private trait `{}` in public interface", trait_ref)
+                                     "{} trait `{}` in public interface",
+                                     privacy_adjective, trait_ref)
                         .span_label(self.span, format!(
-                                    "private trait can't be public"))
+                                    "{} trait can't be public", privacy_adjective))
                         .emit();
                 } else {
                     self.tcx.lint_node(lint::builtin::PRIVATE_IN_PUBLIC,
                                        node_id,
                                        self.span,
-                                       &format!("private trait `{}` in public \
-                                                 interface (error E0445)", trait_ref));
+                                       &format!("{} trait `{}` in public \
+                                                 interface (error E0445)",
+                                                privacy_adjective, trait_ref));
                 }
             }
         }
@@ -1356,17 +1359,20 @@ impl<'a, 'tcx: 'a> TypeVisitor<'tcx> for SearchInterfaceForPrivateItemsVisitor<'
                     self.min_visibility = vis;
                 }
                 if !vis.is_at_least(self.required_visibility, self.tcx) {
+                    let privacy_adjective = &item.vis.description();
                     if self.has_pub_restricted || self.has_old_errors {
                         let mut err = struct_span_err!(self.tcx.sess, self.span, E0446,
-                            "private type `{}` in public interface", ty);
-                        err.span_label(self.span, "can't leak private type");
+                            "{} type `{}` in public interface", privacy_adjective, ty);
+                        err.span_label(self.span, format!("can't leak {} type",
+                                                          privacy_adjective));
                         err.emit();
                     } else {
                         self.tcx.lint_node(lint::builtin::PRIVATE_IN_PUBLIC,
                                            node_id,
                                            self.span,
-                                           &format!("private type `{}` in public \
-                                                     interface (error E0446)", ty));
+                                           &format!("{} type `{}` in public \
+                                                     interface (error E0446)",
+                                                    privacy_adjective, ty));
                     }
                 }
             }

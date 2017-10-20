@@ -1663,8 +1663,8 @@ pub struct PolyTraitRef {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub enum Visibility {
     Public,
-    Crate,
-    Restricted { path: P<Path>, id: NodeId },
+    Crate(Span),
+    Restricted { path: P<Path>, id: NodeId, span: Span },
     Inherited,
 }
 
@@ -1676,6 +1676,16 @@ impl Visibility {
             &Inherited => false,
             &Crate |
             &Restricted { .. } => true,
+        }
+    }
+
+    pub fn description(&self) -> &str {
+        use self::Visibility::*;
+        match *self {
+            Public => "public",
+            Crate => "crate-visible",
+            Restricted { .. } => "restricted-visibility",
+            Inherited => "private",
         }
     }
 }

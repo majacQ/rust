@@ -1791,7 +1791,7 @@ impl PolyTraitRef {
 pub enum Visibility {
     Public,
     Crate(Span),
-    Restricted { path: P<Path>, id: NodeId },
+    Restricted { path: P<Path>, id: NodeId, span: Span },
     Inherited,
 }
 
