@@ -12,6 +12,10 @@ help: try using a variant of the expected type
    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
 21 |     this_function_expects_a_double_option(DoubleOption::AlternativeSome(n));
    |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: try using a conversion method
+   |
+21 |     this_function_expects_a_double_option(n.into());
+   |                                            ^^^^^^^
 
 error: aborting due to previous error
 

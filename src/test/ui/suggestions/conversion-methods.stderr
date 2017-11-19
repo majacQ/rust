@@ -1,0 +1,57 @@
+error[E0308]: mismatched types
+  --> $DIR/conversion-methods.rs:14:31
+   |
+14 |     let _friendship: String = "★ magic ★";
+   |                               ^^^^^^^^^^^- help: try using a conversion method: `.to_string()`
+   |                               |
+   |                               expected struct `std::string::String`, found reference
+   |
+   = note: expected type `std::string::String`
+              found type `&'static str`
+
+error[E0308]: mismatched types
+  --> $DIR/conversion-methods.rs:15:32
+   |
+15 |     let _honesty: Vec<usize> = &[1, 2, 3];
+   |                                ^^^^^^^^^^- help: try using a conversion method: `.to_vec()`
+   |                                |
+   |                                expected struct `std::vec::Vec`, found reference
+   |
+   = note: expected type `std::vec::Vec<usize>`
+              found type `&[{integer}; 3]`
+
+error[E0308]: mismatched types
+  --> $DIR/conversion-methods.rs:16:25
+   |
+16 |     let _loyalty: f64 = Box::new(1.0);
+   |                         ^^^^^^^^^^^^^- help: try using a conversion method: `.into()`
+   |                         |
+   |                         expected f64, found struct `std::boxed::Box`
+   |
+   = note: expected type `f64`
+              found type `std::boxed::Box<{float}>`
+
+error[E0308]: mismatched types
+  --> $DIR/conversion-methods.rs:17:33
+   |
+17 |     let _generosity: &[isize] = Box::new([1, 2, 3]);
+   |                                 ^^^^^^^^^^^^^^^^^^^- help: try using a conversion method: `.as_slice()`
+   |                                 |
+   |                                 expected &[isize], found struct `std::boxed::Box`
+   |
+   = note: expected type `&[isize]`
+              found type `std::boxed::Box<[{integer}; 3]>`
+
+error[E0308]: mismatched types
+  --> $DIR/conversion-methods.rs:18:30
+   |
+18 |     let _laughter: PathBuf = Path::new("/usr/bin/sl");
+   |                              ^^^^^^^^^^^^^^^^^^^^^^^^- help: try using a conversion method: `.to_path_buf()`
+   |                              |
+   |                              expected struct `std::path::PathBuf`, found reference
+   |
+   = note: expected type `std::path::PathBuf`
+              found type `&std::path::Path`
+
+error: aborting due to 5 previous errors
+

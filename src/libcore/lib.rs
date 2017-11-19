@@ -63,8 +63,7 @@
 #![no_core]
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
-#![deny(warnings)]
-
+#![cfg_attr(not(stage0), deny(warnings))] // temp. bootstrap cfg for #[rustc_conversion_suggestion]
 #![feature(allow_internal_unstable)]
 #![feature(asm)]
 #![feature(associated_type_defaults)]

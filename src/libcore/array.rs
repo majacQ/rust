@@ -42,8 +42,10 @@ use slice::{Iter, IterMut};
 /// instead.
 pub unsafe trait FixedSizeArray<T> {
     /// Converts the array to immutable slice
+    #[rustc_conversion_suggestion]
     fn as_slice(&self) -> &[T];
     /// Converts the array to mutable slice
+    #[rustc_conversion_suggestion]
     fn as_mut_slice(&mut self) -> &mut [T];
 }
 

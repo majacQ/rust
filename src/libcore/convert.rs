@@ -243,6 +243,7 @@ pub trait AsMut<T: ?Sized> {
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait Into<T>: Sized {
     /// Performs the conversion.
+    #[rustc_conversion_suggestion]
     #[stable(feature = "rust1", since = "1.0.0")]
     fn into(self) -> T;
 }

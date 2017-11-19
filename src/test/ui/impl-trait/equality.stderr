@@ -19,7 +19,9 @@ error[E0308]: mismatched types
   --> $DIR/equality.rs:53:18
    |
 53 |     let _: u32 = hide(0_u32);
-   |                  ^^^^^^^^^^^ expected u32, found anonymized type
+   |                  ^^^^^^^^^^^- help: try using a conversion method: `.into()`
+   |                  |
+   |                  expected u32, found anonymized type
    |
    = note: expected type `u32`
               found type `impl Foo`
@@ -28,7 +30,9 @@ error[E0308]: mismatched types
   --> $DIR/equality.rs:59:18
    |
 59 |     let _: i32 = Leak::leak(hide(0_i32));
-   |                  ^^^^^^^^^^^^^^^^^^^^^^^ expected i32, found associated type
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^- help: try using a conversion method: `.into()`
+   |                  |
+   |                  expected i32, found associated type
    |
    = note: expected type `i32`
               found type `<impl Foo as Leak>::T`
@@ -37,7 +41,9 @@ error[E0308]: mismatched types
   --> $DIR/equality.rs:66:10
    |
 66 |     x = (x.1,
-   |          ^^^ expected u32, found i32
+   |          ^^^- help: try using a conversion method: `.into()`
+   |          |
+   |          expected u32, found i32
    |
    = note: expected type `impl Foo` (u32)
               found type `impl Foo` (i32)
@@ -46,7 +52,9 @@ error[E0308]: mismatched types
   --> $DIR/equality.rs:69:10
    |
 69 |          x.0);
-   |          ^^^ expected i32, found u32
+   |          ^^^- help: try using a conversion method: `.into()`
+   |          |
+   |          expected i32, found u32
    |
    = note: expected type `impl Foo` (i32)
               found type `impl Foo` (u32)

@@ -8,7 +8,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-
 use check::FnCtxt;
 use rustc::infer::InferOk;
 use rustc::traits::ObligationCause;
@@ -139,49 +138,36 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
                                                  expected) {
             err.help(&suggestion);
         } else {
-            let mode = probe::Mode::MethodCall;
-            let suggestions = self.probe_for_return_type(syntax_pos::DUMMY_SP,
-                                                         mode,
-                                                         expected,
-                                                         checked_ty,
-                                                         ast::DUMMY_NODE_ID);
-            if suggestions.len() > 0 {
-                err.help(&format!("here are some functions which \
-                                   might fulfill your needs:\n{}",
-                                  self.get_best_match(&suggestions).join("\n")));
-            }
+            let suggestions = self.get_conversion_suggestions(expected, checked_ty);
+            err.span_suggestions(expr.span.next_point(),
+                                 "try using a conversion method",
+                                 suggestions);
         }
         (expected, Some(err))
     }
 
-    fn format_method_suggestion(&self, method: &AssociatedItem) -> String {
-        format!("- .{}({})",
-                method.name,
-                if self.has_no_input_arg(method) {
-                    ""
-                } else {
-                    "..."
-                })
-    }
+    fn get_conversion_suggestions(&self, expected: Ty<'tcx>, checked_ty: Ty<'tcx>) -> Vec<String> {
+        let mut methods = self.probe_for_return_type(syntax_pos::DUMMY_SP,
+                                                     probe::Mode::MethodCall,
+                                                     expected,
+                                                     checked_ty,
+                                                     ast::DUMMY_NODE_ID);
+       methods.retain(|m| {
+            self.has_no_input_arg(m) &&
+                self.tcx.get_attrs(m.def_id).iter()
+                .find(|a| a.check_name("rustc_conversion_suggestion")).is_some()
+        });
 
-    fn display_suggested_methods(&self, methods: &[AssociatedItem]) -> Vec<String> {
-        methods.iter()
-               .take(5)
-               .map(|method| self.format_method_suggestion(&*method))
-               .collect::<Vec<String>>()
-    }
-
-    fn get_best_match(&self, methods: &[AssociatedItem]) -> Vec<String> {
-        let no_argument_methods: Vec<_> =
-            methods.iter()
-                   .filter(|ref x| self.has_no_input_arg(&*x))
-                   .map(|x| x.clone())
-                   .collect();
-        if no_argument_methods.len() > 0 {
-            self.display_suggested_methods(&no_argument_methods)
-        } else {
-            self.display_suggested_methods(&methods)
+        // Vertical terminal space is too valuable to waste on multiple
+        // redundant suggestions: favor something more specific than `.into()`
+        // if we have a choice
+        if methods.len() >= 2 {
+            if let Some(index) = methods.iter().position(|m| m.name == "into") {
+                methods.swap_remove(index);
+            }
         }
+
+        methods.into_iter().map(|m| format!(".{}()", m.name)).collect()
     }
 
     // This function checks if the method isn't static and takes other arguments than `self`.
