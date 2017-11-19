@@ -8,6 +8,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use std::ops::Deref;
 
 use check::FnCtxt;
 use rustc::infer::InferOk;
@@ -18,7 +19,7 @@ use syntax_pos::{self, Span};
 use rustc::hir;
 use rustc::hir::print;
 use rustc::hir::def::Def;
-use rustc::ty::{self, Ty, AssociatedItem};
+use rustc::ty::{self, Ty, AssociatedItem, AssociatedItemContainer};
 use errors::{DiagnosticBuilder, CodeMapper};
 
 use super::method::probe;
@@ -146,7 +147,7 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
                                                          checked_ty,
                                                          ast::DUMMY_NODE_ID);
             if suggestions.len() > 0 {
-                err.help(&format!("here are some functions which \
+                err.help(&format!("here are some methods which \
                                    might fulfill your needs:\n{}",
                                   self.get_best_match(&suggestions).join("\n")));
             }
@@ -165,18 +166,39 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
     }
 
     fn display_suggested_methods(&self, methods: &[AssociatedItem]) -> Vec<String> {
+        let limit = if methods.len() == 4 { 4 } else { 3 }; // never omit just one method
         methods.iter()
-               .take(5)
+               .take(limit)
                .map(|method| self.format_method_suggestion(&*method))
                .collect::<Vec<String>>()
     }
 
     fn get_best_match(&self, methods: &[AssociatedItem]) -> Vec<String> {
-        let no_argument_methods: Vec<_> =
+        let mut no_argument_methods: Vec<_> =
             methods.iter()
                    .filter(|ref x| self.has_no_input_arg(&*x))
-                   .map(|x| x.clone())
+                   .cloned()
                    .collect();
+
+        // We want the list to prioritize methods that are plausibly
+        // conversions: we do so first by name, and then by whether the method
+        // comes from a trait (so that methods from actual conversion traits
+        // like `Into<_>` and `ToString` come before methods that merely have a
+        // suggestive name)
+        let conversion_method_name = |n: &str| {
+            n.starts_with("to_") || n.starts_with("into") ||
+                n.starts_with("as_") || n.starts_with("borrow")
+        };
+        no_argument_methods.sort_by_key(|m| {
+            let name = m.name.as_str();
+            let name_fit = if conversion_method_name(name.deref()) { 0 } else { 1 };
+            let traitness = match m.container {
+                AssociatedItemContainer::TraitContainer(_) => 0,
+                AssociatedItemContainer::ImplContainer(_) => 1,
+            };
+            (name_fit, traitness, name)
+        });
+
         if no_argument_methods.len() > 0 {
             self.display_suggested_methods(&no_argument_methods)
         } else {
