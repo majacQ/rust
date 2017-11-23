@@ -185,7 +185,8 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
             self.probe_op(span, mode, None, Some(return_type), IsSuggestion(true),
                           self_ty, scope_expr_id, ProbeScope::AllTraits,
                           |probe_cx| Ok(probe_cx.candidate_method_names()))
-                .unwrap_or(vec![]);
+            .unwrap_or(vec![]);
+
          method_names
              .iter()
              .flat_map(|&method_name| {
@@ -731,10 +732,12 @@ impl<'a, 'gcx, 'tcx> ProbeContext<'a, 'gcx, 'tcx> {
 
             let (xform_self_ty, xform_ret_ty) =
                 self.xform_self_ty(&item, trait_ref.self_ty(), trait_substs);
-            self.push_candidate(Candidate {
+            let candidate = Candidate {
                 xform_self_ty, xform_ret_ty, item, import_id,
                 kind: TraitCandidate(trait_ref),
-            }, false);
+            };
+            info!("ZMD candidate: {:?}", candidate);
+            self.push_candidate(candidate, false);
         }
         Ok(())
     }
@@ -746,7 +749,12 @@ impl<'a, 'gcx, 'tcx> ProbeContext<'a, 'gcx, 'tcx> {
             .chain(&self.extension_candidates)
             .filter(|candidate| {
                 if let Some(return_ty) = self.return_type {
-                    self.matches_return_type(&candidate.item, None, return_ty)
+                    let matches = self.matches_return_type(&candidate.item, None, return_ty);
+                    if matches {
+                        info!("ZMD method name {:?} matches return type {:?}",
+                              candidate.item.name, self.return_type.unwrap());
+                    }
+                    matches
                 } else {
                     true
                 }

@@ -152,11 +152,15 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
                                                      expected,
                                                      checked_ty,
                                                      ast::DUMMY_NODE_ID);
-       methods.retain(|m| {
-            self.has_no_input_arg(m) &&
+        info!("ZMD methods before filter: {:#?}", methods);
+
+        methods.retain(|m| {
+           self.has_no_input_arg(m) &&
                 self.tcx.get_attrs(m.def_id).iter()
                 .find(|a| a.check_name("rustc_conversion_suggestion")).is_some()
         });
+
+        info!("ZMD methods after filter: {:#?}", methods);
 
         // Vertical terminal space is too valuable to waste on multiple
         // redundant suggestions: favor something more specific than `.into()`
