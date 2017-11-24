@@ -1,0 +1,26 @@
+error: enum is private and its variants cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:12:13
+   |
+12 |     pub use self::Professor::*;
+   |             ^^^^^^^^^^^^^^^^^^^
+...
+18 |     enum Professor {
+   |     -------------- help: consider making the enum public: `pub enum Professor`
+
+error: variant is private and cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:14:45
+   |
+14 |     pub use self::Lieutenant::{JuniorGrade, Full};
+   |                                             ^^^^
+...
+25 |     enum Lieutenant {
+   |     --------------- help: consider making the enum public: `pub enum Lieutenant`
+
+error: variant is private and cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:14:32
+   |
+14 |     pub use self::Lieutenant::{JuniorGrade, Full};
+   |                                ^^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+
