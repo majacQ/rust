@@ -64,7 +64,7 @@ use errors::{DiagnosticBuilder, DiagnosticId};
 
 use std::cell::{Cell, RefCell};
 use std::cmp;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, BTreeMap};
 use std::fmt;
 use std::mem::replace;
 use std::rc::Rc;
@@ -906,7 +906,7 @@ pub struct ModuleData<'a> {
     // The def id of the closest normal module (`mod`) ancestor (including this module).
     normal_ancestor_id: DefId,
 
-    resolutions: RefCell<FxHashMap<(Ident, Namespace), &'a RefCell<NameResolution<'a>>>>,
+    resolutions: RefCell<BTreeMap<(Ident, Namespace), &'a RefCell<NameResolution<'a>>>>,
     legacy_macro_resolutions: RefCell<Vec<(Mark, Ident, Span, MacroKind)>>,
     macro_resolutions: RefCell<Vec<(Box<[Ident]>, Span)>>,
 
@@ -944,7 +944,7 @@ impl<'a> ModuleData<'a> {
             parent,
             kind,
             normal_ancestor_id,
-            resolutions: RefCell::new(FxHashMap()),
+            resolutions: RefCell::new(BTreeMap::new()),
             legacy_macro_resolutions: RefCell::new(Vec::new()),
             macro_resolutions: RefCell::new(Vec::new()),
             unresolved_invocations: RefCell::new(FxHashSet()),

@@ -19,7 +19,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Ident {
     pub name: Symbol,
     pub ctxt: SyntaxContext,

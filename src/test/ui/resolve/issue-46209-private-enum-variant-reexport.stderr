@@ -1,11 +1,17 @@
-error: enum is private and its variants cannot be reexported
-  --> $DIR/issue-46209-private-enum-variant-reexport.rs:21:13
+error: variant is private and cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:16:32
    |
-21 |     pub use self::Crewman::*;
-   |             ^^^^^^^^^^^^^^^^^
+16 |     pub use self::Lieutenant::{JuniorGrade, Full};
+   |                                ^^^^^^^^^^^
 ...
-43 |     crate enum Crewman {
-   |     ------------------ help: consider making the enum public: `pub enum Crewman`
+31 |     enum Lieutenant {
+   |     --------------- help: consider making the enum public: `pub enum Lieutenant`
+
+error: variant is private and cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:16:45
+   |
+16 |     pub use self::Lieutenant::{JuniorGrade, Full};
+   |                                             ^^^^
 
 error: enum is private and its variants cannot be reexported
   --> $DIR/issue-46209-private-enum-variant-reexport.rs:14:13
@@ -16,15 +22,6 @@ error: enum is private and its variants cannot be reexported
 24 |     enum Professor {
    |     -------------- help: consider making the enum public: `pub enum Professor`
 
-error: variant is private and cannot be reexported
-  --> $DIR/issue-46209-private-enum-variant-reexport.rs:16:45
-   |
-16 |     pub use self::Lieutenant::{JuniorGrade, Full};
-   |                                             ^^^^
-...
-31 |     enum Lieutenant {
-   |     --------------- help: consider making the enum public: `pub enum Lieutenant`
-
 error: enum is private and its variants cannot be reexported
   --> $DIR/issue-46209-private-enum-variant-reexport.rs:19:13
    |
@@ -34,11 +31,14 @@ error: enum is private and its variants cannot be reexported
 36 |     pub(in rank) enum PettyOfficer {
    |     ------------------------------ help: consider making the enum public: `pub enum PettyOfficer`
 
-error: variant is private and cannot be reexported
-  --> $DIR/issue-46209-private-enum-variant-reexport.rs:16:32
+error: enum is private and its variants cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:21:13
    |
-16 |     pub use self::Lieutenant::{JuniorGrade, Full};
-   |                                ^^^^^^^^^^^
+21 |     pub use self::Crewman::*;
+   |             ^^^^^^^^^^^^^^^^^
+...
+43 |     crate enum Crewman {
+   |     ------------------ help: consider making the enum public: `pub enum Crewman`
 
 error: aborting due to 5 previous errors
 
