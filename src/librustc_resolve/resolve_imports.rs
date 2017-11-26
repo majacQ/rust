@@ -898,11 +898,14 @@ impl<'a, 'b:'a> ImportResolver<'a, 'b> {
                                 .get(&(enum_ident, TypeNS)).expect("resolution exists").borrow()
                                 .binding.expect("binding should exist")
                                 .span;
-
                             let enum_def_span = self.session.codemap().def_span(enum_span);
                             let enum_def_snippet = self.session.codemap()
                                 .span_to_snippet(enum_def_span).expect("snippet should exist");
-                            let suggestion = format!("pub {}", enum_def_snippet);
+                            // potentially need to strip extant `crate`/`pub(path)` for suggestion
+                            let after_vis_index = enum_def_snippet.find("enum")
+                                .expect("`enum` keyword should exist in snippet");
+                            let suggestion = format!("pub {}",
+                                                     &enum_def_snippet[after_vis_index..]);
 
                             self.session
                                 .diag_span_suggestion_once(&mut err,

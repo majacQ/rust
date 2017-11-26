@@ -8,12 +8,18 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![feature(crate_visibility_modifier)]
+
 mod rank {
     pub use self::Professor::*;
     //~^ ERROR enum is private and its variants cannot be reexported
     pub use self::Lieutenant::{JuniorGrade, Full};
     //~^ ERROR variant is private and cannot be reexported
     //~| ERROR variant is private and cannot be reexported
+    pub use self::PettyOfficer::*;
+    //~^ ERROR enum is private and its variants cannot be reexported
+    pub use self::Crewman::*;
+    //~^ ERROR enum is private and its variants cannot be reexported
 
     enum Professor {
         Adjunct,
@@ -25,6 +31,19 @@ mod rank {
     enum Lieutenant {
         JuniorGrade,
         Full,
+    }
+
+    pub(in rank) enum PettyOfficer {
+        SecondClass,
+        FirstClass,
+        Chief,
+        MasterChief
+    }
+
+    crate enum Crewman {
+        Recruit,
+        Apprentice,
+        Full
     }
 
 }

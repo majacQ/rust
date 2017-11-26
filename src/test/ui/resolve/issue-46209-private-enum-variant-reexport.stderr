@@ -1,26 +1,44 @@
 error: enum is private and its variants cannot be reexported
-  --> $DIR/issue-46209-private-enum-variant-reexport.rs:12:13
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:21:13
    |
-12 |     pub use self::Professor::*;
+21 |     pub use self::Crewman::*;
+   |             ^^^^^^^^^^^^^^^^^
+...
+43 |     crate enum Crewman {
+   |     ------------------ help: consider making the enum public: `pub enum Crewman`
+
+error: enum is private and its variants cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:14:13
+   |
+14 |     pub use self::Professor::*;
    |             ^^^^^^^^^^^^^^^^^^^
 ...
-18 |     enum Professor {
+24 |     enum Professor {
    |     -------------- help: consider making the enum public: `pub enum Professor`
 
 error: variant is private and cannot be reexported
-  --> $DIR/issue-46209-private-enum-variant-reexport.rs:14:45
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:16:45
    |
-14 |     pub use self::Lieutenant::{JuniorGrade, Full};
+16 |     pub use self::Lieutenant::{JuniorGrade, Full};
    |                                             ^^^^
 ...
-25 |     enum Lieutenant {
+31 |     enum Lieutenant {
    |     --------------- help: consider making the enum public: `pub enum Lieutenant`
 
-error: variant is private and cannot be reexported
-  --> $DIR/issue-46209-private-enum-variant-reexport.rs:14:32
+error: enum is private and its variants cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:19:13
    |
-14 |     pub use self::Lieutenant::{JuniorGrade, Full};
+19 |     pub use self::PettyOfficer::*;
+   |             ^^^^^^^^^^^^^^^^^^^^^^
+...
+36 |     pub(in rank) enum PettyOfficer {
+   |     ------------------------------ help: consider making the enum public: `pub enum PettyOfficer`
+
+error: variant is private and cannot be reexported
+  --> $DIR/issue-46209-private-enum-variant-reexport.rs:16:32
+   |
+16 |     pub use self::Lieutenant::{JuniorGrade, Full};
    |                                ^^^^^^^^^^^
 
-error: aborting due to 3 previous errors
+error: aborting due to 5 previous errors
 
