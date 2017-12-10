@@ -30,7 +30,7 @@ impl<'a, 'tcx> ItemLikeVisitor<'tcx> for OutlivesTest<'a, 'tcx> {
             let inferred_outlives_of = self.tcx.inferred_outlives_of(item_def_id);
             span_err!(self.tcx.sess,
                       item.span,
-                      E0640,
+                      E0640, // FIXME: this is not an appropriate use of an error code
                       "{:?}",
                       inferred_outlives_of);
         }

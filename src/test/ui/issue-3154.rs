@@ -1,4 +1,4 @@
-// Copyright 2013 The Rust Project Developers. See the COPYRIGHT
+// Copyright 2012 The Rust Project Developers. See the COPYRIGHT
 // file at the top-level directory of this distribution and at
 // http://rust-lang.org/COPYRIGHT.
 //
@@ -8,9 +8,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![deny(warnings)]
-#![feature(no_stack_check)]
-//~^ ERROR: 12:12: 12:26: feature has been removed [E0557]
-fn main() {
+struct thing<'a, Q:'a> {
+    x: &'a Q
+}
 
+fn thing<'a, Q>(x: &Q) -> thing<'a, Q> {
+    thing{ x: x } //~ ERROR explicit lifetime required in the type of `x` [E0621]
+}
+
+fn main() {
+    thing(&());
 }

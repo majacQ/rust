@@ -1,4 +1,4 @@
-// Copyright 2012 The Rust Project Developers. See the COPYRIGHT
+// Copyright 2012-2014 The Rust Project Developers. See the COPYRIGHT
 // file at the top-level directory of this distribution and at
 // http://rust-lang.org/COPYRIGHT.
 //
@@ -8,11 +8,20 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-// Issue #8624. Test for reborrowing with 3 levels, not just two.
+trait Foo {
+    fn dummy(&self) { }
+}
 
-fn copy_borrowed_ptr<'a, 'b, 'c>(p: &'a mut &'b mut &'c mut isize) -> &'b mut isize {
-    &mut ***p //~ ERROR 14:5: 14:14: lifetime mismatch [E0623]
+struct A;
+
+impl Foo for A {}
+
+struct B<'a>(&'a (Foo+'a));
+
+fn foo<'a>(a: &Foo) -> B<'a> {
+    B(a) //~ ERROR explicit lifetime required in the type of `a` [E0621]
 }
 
 fn main() {
+    let _test = foo(&A);
 }

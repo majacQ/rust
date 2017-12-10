@@ -20,7 +20,7 @@ fn ordering1<'a, 'b>(x: &'a &'b usize) -> &'a usize {
 
 fn ordering2<'a, 'b>(x: &'a &'b usize, y: &'a usize) -> &'b usize {
     // However, it is not safe to assume that 'b <= 'a
-    &*y //~ ERROR 23:5: 23:8: lifetime mismatch [E0623]
+    &*y //~ ERROR lifetime mismatch [E0623]
 }
 
 fn ordering3<'a, 'b>(x: &'a usize, y: &'b usize) -> &'a &'b usize {

@@ -46,7 +46,7 @@ fn baz<'a,'b>(x: Type<'a>, y: Type<'b>) -> (Type<'a>, Type<'b>) {
 fn baz<'a,'b>(x: Type<'a>, y: Type<'b>) -> (Type<'a>, Type<'b>) {
    let f = foo; // <-- No consistent type can be inferred for `f` here.
    let a = bar(f, x);
-   let b = bar(f, y); //[oneuse]~ ERROR 49:19: 49:20: lifetime mismatch [E0623]
+   let b = bar(f, y); //[oneuse]~ ERROR lifetime mismatch [E0623]
    (a, b)
 }
 

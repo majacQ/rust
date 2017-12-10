@@ -131,30 +131,11 @@ fn push_expected_errors(expected_errors: &mut Vec<Error>,
     // [E123] to every line in the output. This may be overkill.  The
     // intention was to match existing tests that do things like "//|
     // found `i32` [E123]" and expect to match that somewhere, and yet
-    // also ensure that `//~ ERROR E123` *always* works. The
-    // assumption is that these multi-line error messages are on their
-    // way out anyhow.
-    let with_code = |span: &DiagnosticSpan, text: &str| {
+    // also ensure that `//~ ERROR E123` *always* works.
+    let with_code = |text: &str| {
         match diagnostic.code {
-            Some(ref code) =>
-                // FIXME(#33000) -- it'd be better to use a dedicated
-                // UI harness than to include the line/col number like
-                // this, but some current tests rely on it.
-                //
-                // Note: Do NOT include the filename. These can easily
-                // cause false matches where the expected message
-                // appears in the filename, and hence the message
-                // changes but the test still passes.
-                format!("{}:{}: {}:{}: {} [{}]",
-                        span.line_start, span.column_start,
-                        span.line_end, span.column_end,
-                        text, code.code.clone()),
-            None =>
-                // FIXME(#33000) -- it'd be better to use a dedicated UI harness
-                format!("{}:{}: {}:{}: {}",
-                        span.line_start, span.column_start,
-                        span.line_end, span.column_end,
-                        text),
+            Some(ref code) => format!("{} [{}]", text, code.code.clone()),
+            None => text.to_owned()
         }
     };
 
@@ -164,7 +145,7 @@ fn push_expected_errors(expected_errors: &mut Vec<Error>,
     let mut message_lines = diagnostic.message.lines();
     if let Some(first_line) = message_lines.next() {
         for span in primary_spans {
-            let msg = with_code(span, first_line);
+            let msg = with_code(first_line);
             let kind = ErrorKind::from_str(&diagnostic.level).ok();
             expected_errors.push(Error {
                 line_num: span.line_start,
@@ -178,7 +159,7 @@ fn push_expected_errors(expected_errors: &mut Vec<Error>,
             expected_errors.push(Error {
                 line_num: span.line_start,
                 kind: None,
-                msg: with_code(span, next_line),
+                msg: with_code(next_line),
             });
         }
     }

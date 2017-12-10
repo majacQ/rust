@@ -8,14 +8,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-struct thing<'a, Q:'a> {
-    x: &'a Q
+enum ast<'a> {
+    num(usize),
+    add(&'a ast<'a>, &'a ast<'a>)
 }
 
-fn thing<'a,Q>(x: &Q) -> thing<'a,Q> {
-    thing{ x: x } //~ ERROR 16:5: 16:18: explicit lifetime required in the type of `x` [E0621]
+fn mk_add_bad1<'a,'b>(x: &'a ast<'a>, y: &'b ast<'b>) -> ast<'a> {
+    ast::add(x, y) //~ ERROR lifetime mismatch [E0623]
 }
 
 fn main() {
-    thing(&());
 }

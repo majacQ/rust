@@ -52,8 +52,8 @@ fn baz<'a,'b>(x: &'a u32) -> &'static u32 {
 fn transmute<'a,'b>(x: &'a u32, y: &'b u32) -> (&'a u32, &'b u32) {
    let a = bar(foo, y);
    let b = bar(foo, x);
-   (a, b) //[krisskross]~ ERROR 55:5: 55:6: lifetime mismatch [E0623]
-   //[krisskross]~^ ERROR 55:8: 55:9: lifetime mismatch [E0623]
+   (a, b) //[krisskross]~ ERROR lifetime mismatch [E0623]
+   //[krisskross]~^ ERROR lifetime mismatch [E0623]
 }
 
 #[rustc_error]
