@@ -23,6 +23,7 @@ use rustc::hir::def_id::DefId;
 use rustc::hir::def::*;
 use rustc::session::DiagnosticMessageId;
 use rustc::util::nodemap::{FxHashMap, FxHashSet};
+use rustc_errors::{DiagnosticBuilder, DiagnosticId};
 
 use syntax::ast::{Ident, Name, SpannedIdent, NodeId};
 use syntax::ext::base::Determinacy::{self, Determined, Undetermined};
@@ -599,6 +600,18 @@ impl<'a, 'b:'a> ImportResolver<'a, 'b> {
         !indeterminate
     }
 
+    fn private_reexport_error(&self, span: Span, ns: Namespace, ident: Ident)
+                              -> DiagnosticBuilder {
+        __diagnostic_used!(E0364);
+        __diagnostic_used!(E0365);
+        let code = match ns {
+            TypeNS => DiagnosticId("E0365"),
+            _ => DiagnosticId("E0364"),
+        };
+        let msg = format!("`{}` is private and cannot be reexported", ident);
+        self.session.struct_span_err_with_code(span, &msg, code)
+    }
+
     // If appropriate, returns an error to report.
     fn finalize_import(&mut self, directive: &'b ImportDirective<'b>) -> Option<(Span, String)> {
         self.current_module = directive.parent;
@@ -756,19 +769,12 @@ impl<'a, 'b:'a> ImportResolver<'a, 'b> {
                                          directive.id,
                                          directive.span,
                                          &msg);
-            } else if ns == TypeNS {
-                struct_span_err!(self.session, directive.span, E0365,
-                                 "`{}` is private, and cannot be reexported", ident)
-                    .span_label(directive.span, format!("reexport of private `{}`", ident))
-                    .note(&format!("consider declaring type or module `{}` with `pub`", ident))
-                    .emit();
             } else {
-                let msg = format!("`{}` is private, and cannot be reexported", ident);
-                let note_msg =
-                    format!("consider marking `{}` as `pub` in the imported module", ident);
-                struct_span_err!(self.session, directive.span, E0364, "{}", &msg)
-                    .span_note(directive.span, &note_msg)
-                    .emit();
+                let mut err = self.private_reexport_error(directive.span, ns, ident);
+                // FIXME: use a structured suggestion (taking care to get the spans
+                // right even if there's an existing `pub(in path)`, &c.)
+                err.help("consider making it public");
+                err.emit();
             }
         }
 
