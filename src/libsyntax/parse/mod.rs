@@ -41,6 +41,20 @@ pub mod common;
 pub mod classify;
 pub mod obsolete;
 
+
+/// Singleton tuple-struct (rather than a type alias, in order to satisfy the
+/// orphan rules—we want to be able to convert `From` a `PResult`) whose value
+/// is like `PResult`, but the `Err` value is a tuple whose first value is a
+/// partial result (of some useful work we did before hitting the error), and
+/// whose second value is the error.
+pub struct PartialPResult<'a, T>(Result<T, (T, DiagnosticBuilder<'a>)>);
+
+impl<'a, T> From<PResult<'a, T>> for PartialPResult<'a, T> where T: Default {
+    fn from(result: PResult<'a, T>) -> Self {
+        PartialPResult(result.map_err(|err| (T::default(), err)))
+    }
+}
+
 /// Info about a parsing session.
 pub struct ParseSess {
     pub span_diagnostic: Handler,

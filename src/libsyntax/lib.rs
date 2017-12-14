@@ -23,6 +23,7 @@
 #![feature(unicode)]
 #![feature(rustc_diagnostic_macros)]
 #![feature(i128_type)]
+#![feature(try_trait)]
 
 // See librustc_cratesio_shim/Cargo.toml for a comment explaining this.
 #[allow(unused_extern_crates)]
