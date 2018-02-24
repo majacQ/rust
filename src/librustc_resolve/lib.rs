@@ -59,6 +59,7 @@ use syntax::ast::{Label, Local, Mutability, Pat, PatKind, Path};
 use syntax::ast::{QSelf, TraitItemKind, TraitRef, Ty, TyKind};
 use syntax::feature_gate::{feature_err, emit_feature_err, GateIssue};
 use syntax::parse::token;
+use syntax::ptr::P;
 
 use syntax_pos::{Span, DUMMY_SP, MultiSpan};
 use errors::{DiagnosticBuilder, DiagnosticId};
@@ -2327,19 +2328,19 @@ impl<'a> Resolver<'a> {
         binding_map
     }
 
-    // check that all of the arms in an or-pattern have exactly the
+    // check that all of the subpatterns in an or-pattern have exactly the
     // same set of bindings, with the same binding modes for each.
-    fn check_consistent_bindings(&mut self, arm: &Arm) {
-        if arm.pats.is_empty() {
+    fn check_consistent_bindings(&mut self, pats: &[P<Pat>]) {
+        if pats.is_empty() {
             return;
         }
 
         let mut missing_vars = FxHashMap();
         let mut inconsistent_vars = FxHashMap();
-        for (i, p) in arm.pats.iter().enumerate() {
+        for (i, p) in pats.iter().enumerate() {
             let map_i = self.binding_mode_map(&p);
 
-            for (j, q) in arm.pats.iter().enumerate() {
+            for (j, q) in pats.iter().enumerate() {
                 if i == j {
                     continue;
                 }
@@ -2406,7 +2407,7 @@ impl<'a> Resolver<'a> {
 
         // This has to happen *after* we determine which
         // pat_idents are variants
-        self.check_consistent_bindings(arm);
+        self.check_consistent_bindings(&arm.pats);
 
         walk_list!(self, visit_expr, &arm.guard);
         self.visit_expr(&arm.body);
@@ -3480,11 +3481,15 @@ impl<'a> Resolver<'a> {
                 visit::walk_expr(self, expr);
             }
 
-            ExprKind::IfLet(ref pattern, ref subexpression, ref if_block, ref optional_else) => {
+            ExprKind::IfLet(ref patterns, ref subexpression, ref if_block, ref optional_else) => {
                 self.visit_expr(subexpression);
 
                 self.ribs[ValueNS].push(Rib::new(NormalRibKind));
-                self.resolve_pattern(pattern, PatternSource::IfLet, &mut FxHashMap());
+                for pattern in patterns {
+                    self.resolve_pattern(pattern, PatternSource::IfLet, &mut FxHashMap());
+                }
+                self.check_consistent_bindings(patterns);
+
                 self.visit_block(if_block);
                 self.ribs[ValueNS].pop();
 

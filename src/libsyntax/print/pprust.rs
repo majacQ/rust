@@ -1767,11 +1767,16 @@ impl<'a> State<'a> {
                         self.print_else(e.as_ref().map(|e| &**e))
                     }
                     // "another else-if-let"
-                    ast::ExprKind::IfLet(ref pat, ref expr, ref then, ref e) => {
+                    ast::ExprKind::IfLet(ref pats, ref expr, ref then, ref e) => {
                         self.cbox(INDENT_UNIT - 1)?;
                         self.ibox(0)?;
                         self.s.word(" else if let ")?;
-                        self.print_pat(pat)?;
+                        for pat in pats {
+                            self.print_pat(pat)?;
+                            // XXX TODO FIXME: this isn't correct; there should
+                            // be no trailing vert
+                            self.word_space("|")?;
+                        }
                         self.s.space()?;
                         self.word_space("=")?;
                         self.print_expr_as_cond(expr)?;
@@ -1805,10 +1810,14 @@ impl<'a> State<'a> {
         self.print_else(elseopt)
     }
 
-    pub fn print_if_let(&mut self, pat: &ast::Pat, expr: &ast::Expr, blk: &ast::Block,
+    pub fn print_if_let(&mut self, pats: &[P<ast::Pat>], expr: &ast::Expr, blk: &ast::Block,
                         elseopt: Option<&ast::Expr>) -> io::Result<()> {
         self.head("if let")?;
-        self.print_pat(pat)?;
+        for pat in pats {
+            self.print_pat(pat)?;
+            // XXX FIXME
+            self.word_space("|")?;
+        }
         self.s.space()?;
         self.word_space("=")?;
         self.print_expr_as_cond(expr)?;
@@ -2109,8 +2118,8 @@ impl<'a> State<'a> {
             ast::ExprKind::If(ref test, ref blk, ref elseopt) => {
                 self.print_if(test, blk, elseopt.as_ref().map(|e| &**e))?;
             }
-            ast::ExprKind::IfLet(ref pat, ref expr, ref blk, ref elseopt) => {
-                self.print_if_let(pat, expr, blk, elseopt.as_ref().map(|e| &**e))?;
+            ast::ExprKind::IfLet(ref pats, ref expr, ref blk, ref elseopt) => {
+                self.print_if_let(pats, expr, blk, elseopt.as_ref().map(|e| &**e))?;
             }
             ast::ExprKind::While(ref test, ref blk, opt_label) => {
                 if let Some(label) = opt_label {

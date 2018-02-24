@@ -3226,7 +3226,7 @@ impl<'a> Parser<'a> {
                              -> PResult<'a, P<Expr>> {
         let lo = self.prev_span;
         self.expect_keyword(keywords::Let)?;
-        let pat = self.parse_pat()?;
+        let pats = self.parse_pats()?;
         self.expect(&token::Eq)?;
         let expr = self.parse_expr_res(Restrictions::NO_STRUCT_LITERAL, None)?;
         let thn = self.parse_block()?;
@@ -3236,7 +3236,7 @@ impl<'a> Parser<'a> {
         } else {
             (thn.span, None)
         };
-        Ok(self.mk_expr(lo.to(hi), ExprKind::IfLet(pat, expr, thn, els), attrs))
+        Ok(self.mk_expr(lo.to(hi), ExprKind::IfLet(pats, expr, thn, els), attrs))
     }
 
     // `move |args| expr`

@@ -2955,12 +2955,12 @@ impl<'a> LoweringContext<'a> {
             }
 
             // Desugar ExprIfLet
-            // From: `if let <pat> = <sub_expr> <body> [<else_opt>]`
-            ExprKind::IfLet(ref pat, ref sub_expr, ref body, ref else_opt) => {
+            // From: `if let <pat> [ | <alt_pat>] = <sub_expr> <body> [<else_opt>]`
+            ExprKind::IfLet(ref pats, ref sub_expr, ref body, ref else_opt) => {
                 // to:
                 //
                 //   match <sub_expr> {
-                //     <pat> => <body>,
+                //     <pat> [ | <alt_pat>] => <body>,
                 //     _ => [<else_opt> | ()]
                 //   }
 
@@ -2970,8 +2970,10 @@ impl<'a> LoweringContext<'a> {
                 {
                     let body = self.lower_block(body, false);
                     let body_expr = P(self.expr_block(body, ThinVec::new()));
-                    let pat = self.lower_pat(pat);
-                    arms.push(self.arm(hir_vec![pat], body_expr));
+                    let lowered_pats = HirVec::from(pats.iter()
+                                                    .map(|pat| self.lower_pat(pat))
+                                                    .collect::<Vec<_>>());
+                    arms.push(self.arm(lowered_pats, body_expr));
                 }
 
                 // _ => [<else_opt>|()]

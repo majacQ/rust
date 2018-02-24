@@ -447,8 +447,11 @@ declare_features! (
     // Allows `#[repr(transparent)]` attribute on newtype structs
     (active, repr_transparent, "1.25.0", Some(43036)),
 
-    // Use `?` as the Kleene "at most one" operator
+    // Use `?` as the Kleene "at most one" operator in macro definitions
     (active, macro_at_most_once_rep, "1.25.0", Some(48075)),
+
+    // or-patterns in `let`, `if let`, and `while let`
+    (active, let_or_patterns, "1.26.0", Some(48215)),
 );
 
 declare_features! (

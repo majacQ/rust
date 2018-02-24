@@ -36,6 +36,7 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
                       discriminant: ExprRef<'tcx>,
                       arms: Vec<Arm<'tcx>>)
                       -> BlockAnd<()> {
+        info!("ZMD superdebug0: arms: {:?}", arms);
         let discriminant_place = unpack!(block = self.as_place(block, discriminant));
 
         // Matching on a `discriminant_place` with an uninhabited type doesn't
@@ -91,6 +92,7 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
                 .zip(pre_binding_blocks.iter().zip(pre_binding_blocks.iter().skip(1)))
                 .map(|((arm_index, pattern, guard),
                        (pre_binding_block, next_candidate_pre_binding_block))| {
+                    info!("ZMD superdebug1: pattern {:?}", pattern);
                     Candidate {
                         span: pattern.span,
                         match_pairs: vec![MatchPair::new(discriminant_place.clone(), pattern)],
@@ -239,7 +241,9 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
     pub fn storage_live_binding(&mut self, block: BasicBlock, var: NodeId, span: Span)
                             -> Place<'tcx>
     {
+        info!("ZMD DEBUG B1 inside storage_live_binding; var_indices is {:?}", self.var_indices);
         let local_id = self.var_indices[&var];
+        info!("ZMD DEBUG B2, got local_id");
         let source_info = self.source_info(span);
         self.cfg.push(block, Statement {
             source_info,
@@ -416,7 +420,7 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
                               mut block: BasicBlock)
                               -> Vec<BasicBlock>
     {
-        debug!("matched_candidate(span={:?}, block={:?}, candidates={:?})",
+        info!("matched_candidate(span={:?}, block={:?}, candidates={:?})",
                span, block, candidates);
 
         // Start by simplifying candidates. Once this process is
@@ -728,7 +732,7 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
                                               arm_blocks: &mut ArmBlocks,
                                               candidate: Candidate<'pat, 'tcx>)
                                               -> Option<BasicBlock> {
-        debug!("bind_and_guard_matched_candidate(block={:?}, candidate={:?})",
+        info!("bind_and_guard_matched_candidate(block={:?}, candidate={:?})",
                block, candidate);
 
         debug_assert!(candidate.match_pairs.is_empty());
@@ -779,21 +783,27 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
     fn bind_matched_candidate(&mut self,
                               block: BasicBlock,
                               bindings: Vec<Binding<'tcx>>) {
-        debug!("bind_matched_candidate(block={:?}, bindings={:?})",
+        info!("bind_matched_candidate(block={:?}, bindings={:?})",
                block, bindings);
 
         // Assign each of the bindings. This may trigger moves out of the candidate.
         for binding in bindings {
+            info!("ZMD DEBUG A binding is {:?}", binding);
             let source_info = self.source_info(binding.span);
+            info!("ZMD DEBUG B source_info is {:?}", source_info);
             let local = self.storage_live_binding(block, binding.var_id, binding.span);
+            info!("ZMD DEBUG C local is {:?}", local);
             self.schedule_drop_for_binding(binding.var_id, binding.span);
+            info!("ZMD DEBUG D");
             let rvalue = match binding.binding_mode {
                 BindingMode::ByValue =>
                     Rvalue::Use(self.consume_by_copy_or_move(binding.source)),
                 BindingMode::ByRef(region, borrow_kind) =>
                     Rvalue::Ref(region, borrow_kind, binding.source),
             };
+            info!("ZMD DEBUG E");
             self.cfg.push_assign(block, source_info, &local, rvalue);
+            info!("ZMD DEBUG F");
         }
     }
 
@@ -806,7 +816,7 @@ impl<'a, 'gcx, 'tcx> Builder<'a, 'gcx, 'tcx> {
                        var_ty: Ty<'tcx>)
                        -> Local
     {
-        debug!("declare_binding(var_id={:?}, name={:?}, var_ty={:?}, source_info={:?}, \
+        info!("declare_binding(var_id={:?}, name={:?}, var_ty={:?}, source_info={:?}, \
                 syntactic_scope={:?})",
                var_id, name, var_ty, source_info, syntactic_scope);
 

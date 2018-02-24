@@ -1630,9 +1630,10 @@ impl<'l, 'tcx: 'l, 'll, O: DumpOutput + 'll> Visitor<'l> for DumpVisitor<'l, 'tc
                 self.visit_expr(subexpression);
                 visit::walk_block(self, block);
             }
-            ast::ExprKind::IfLet(ref pattern, ref subexpression, ref block, ref opt_else) => {
+            ast::ExprKind::IfLet(ref patterns, ref subexpression, ref block, ref opt_else) => {
                 let value = self.span.snippet(subexpression.span);
-                self.process_var_decl(pattern, value);
+                // XXX HACK: can we do better?
+                self.process_var_decl(&patterns[0], value);
                 self.visit_expr(subexpression);
                 visit::walk_block(self, block);
                 opt_else.as_ref().map(|el| self.visit_expr(el));
