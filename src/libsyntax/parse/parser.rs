@@ -3294,7 +3294,7 @@ impl<'a> Parser<'a> {
                           mut attrs: ThinVec<Attribute>) -> PResult<'a, P<Expr>> {
         // Parse: `for <src_pat> in <src_expr> <src_loop_block>`
 
-        let pat = self.parse_pat()?;
+        let pat = self.parse_top_level_pat()?;
         if !self.eat_keyword(keywords::In) {
             let in_span = self.prev_span.between(self.span);
             let mut err = self.sess.span_diagnostic
@@ -3466,7 +3466,7 @@ impl<'a> Parser<'a> {
     fn parse_pats(&mut self) -> PResult<'a, Vec<P<Pat>>> {
         let mut pats = Vec::new();
         loop {
-            pats.push(self.parse_pat()?);
+            pats.push(self.parse_top_level_pat()?);
 
             if self.token == token::OrOr {
                 let mut err = self.struct_span_err(self.span,
@@ -3690,6 +3690,37 @@ impl<'a> Parser<'a> {
         }))
     }
 
+    /// A wrapper around `parse_pat` with some special error handling for the
+    /// "top-level" patterns in a match arm, `for` loop, `let`, &c. (in contast
+    /// to subpatterns within such).
+    pub fn parse_top_level_pat(&mut self) -> PResult<'a, P<Pat>> {
+        let pat = self.parse_pat()?;
+        if self.token == token::Comma {
+            // An unexpected comma after a top-level pattern is a clue that the
+            // user (perhaps more accustomed to some other language) forgot the
+            // parentheses in what should have been a tuple pattern; emit a
+            // suggestion-enhanced error here rather than choking on the comma
+            // later.
+            let comma_span = self.span;
+            self.bump();
+            if let Err(mut err) = self.parse_pat_tuple_elements(false) {
+                // We didn't expect this to work anyway; we just wanted
+                // to advance to the end of the comma-sequence so we know
+                // the span to suggest parenthesizing
+                err.cancel();
+            }
+            let seq_span = pat.span.to(self.prev_span);
+            let mut err = self.struct_span_err(comma_span,
+                                               "unexpected `,` in pattern");
+            if let Ok(seq_snippet) = self.sess.codemap().span_to_snippet(seq_span) {
+                err.span_suggestion(seq_span, "try adding parentheses",
+                                    format!("({})", seq_snippet));
+            }
+            err.emit();
+        }
+        Ok(pat)
+    }
+
     /// Parse a pattern.
     pub fn parse_pat(&mut self) -> PResult<'a, P<Pat>> {
         maybe_whole!(self, NtPat, |x| x);
@@ -3881,7 +3912,7 @@ impl<'a> Parser<'a> {
     /// Parse a local variable declaration
     fn parse_local(&mut self, attrs: ThinVec<Attribute>) -> PResult<'a, P<Local>> {
         let lo = self.prev_span;
-        let pat = self.parse_pat()?;
+        let pat = self.parse_top_level_pat()?;
 
         let (err, ty) = if self.eat(&token::Colon) {
             // Save the state of the parser before parsing type normally, in case there is a `:`

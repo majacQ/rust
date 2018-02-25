@@ -1,0 +1,50 @@
+error: unexpected `,` in pattern
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:47:17
+   |
+47 |     while let b1, b2, b3 = reading_frame.next().expect("there should be a start codon") {
+   |               --^------- help: try adding parentheses: `(b1, b2, b3)`
+
+error: unexpected `,` in pattern
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:57:14
+   |
+57 |     if let b1, b2, b3 = reading_frame.next().unwrap() {
+   |            --^------- help: try adding parentheses: `(b1, b2, b3)`
+
+error: unexpected `,` in pattern
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:62:32
+   |
+62 |             Nucleotide::Adenine, Nucleotide::Cytosine, _ => {
+   |             -------------------^------------------------ help: try adding parentheses: `(Nucleotide::Adenine, Nucleotide::Cytosine, _)`
+
+error: unexpected `,` in pattern
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:74:10
+   |
+74 |     for x, _barr_body in women.iter().map(|woman| woman.allosomes.clone()) {
+   |         -^----------- help: try adding parentheses: `(x, _barr_body)`
+
+error: unexpected `,` in pattern
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:78:10
+   |
+78 |     for x, y @ Allosome::Y(_) in men.iter().map(|man| man.allosomes.clone()) {
+   |         -^------------------- help: try adding parentheses: `(x, y @ Allosome::Y(_))`
+
+error: unexpected `,` in pattern
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:86:14
+   |
+86 |     let women, men: (Vec<Genome>, Vec<Genome>) = genomes.iter().cloned()
+   |         -----^---- help: try adding parentheses: `(women, men)`
+
+error[E0425]: cannot find value `b2` in this scope
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:59:20
+   |
+59 |         match (b1, b2, b3) {
+   |                    ^^ did you mean `b1`?
+
+error[E0425]: cannot find value `b3` in this scope
+  --> $DIR/issue-48492-tuple-destructure-missing-parens.rs:59:24
+   |
+59 |         match (b1, b2, b3) {
+   |                        ^^ did you mean `b1`?
+
+error: aborting due to 8 previous errors
+
