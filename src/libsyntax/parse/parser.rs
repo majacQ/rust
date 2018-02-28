@@ -53,7 +53,7 @@ use parse::{new_sub_parser_from_file, ParseSess, Directory, DirectoryOwnership};
 use util::parser::{AssocOp, Fixity};
 use print::pprust;
 use ptr::P;
-use parse::PResult;
+use parse::{PResult, PartialPResult};
 use tokenstream::{self, Delimited, ThinTokenStream, TokenTree, TokenStream};
 use symbol::{Symbol, keywords};
 use util::ThinVec;
@@ -3485,7 +3485,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_pat_tuple_elements(&mut self, unary_needs_comma: bool)
-                                -> PResult<'a, (Vec<P<Pat>>, Option<usize>)> {
+                                -> PartialPResult<'a, (Vec<P<Pat>>, Option<usize>)> {
         let mut fields = vec![];
         let mut ddpos = None;
 
@@ -3494,19 +3494,24 @@ impl<'a> Parser<'a> {
                 ddpos = Some(fields.len());
                 if self.eat(&token::Comma) {
                     // `..` needs to be followed by `)` or `, pat`, `..,)` is disallowed.
-                    fields.push(self.parse_pat()?);
+                    let field = self.parse_pat()
+                        .map_err(|err| ((fields.clone(), ddpos), err))?;
+                    fields.push(field);
                 }
             } else if ddpos.is_some() && self.eat(&token::DotDot) {
                 // Emit a friendly error, ignore `..` and continue parsing
                 self.span_err(self.prev_span, "`..` can only be used once per \
                                                tuple or tuple struct pattern");
             } else {
-                fields.push(self.parse_pat()?);
+                let field = self.parse_pat()
+                    .map_err(|err| ((fields.clone(), ddpos), err))?;
+                fields.push(field);
             }
 
             if !self.check(&token::CloseDelim(token::Paren)) ||
                     (unary_needs_comma && fields.len() == 1 && ddpos.is_none()) {
-                self.expect(&token::Comma)?;
+                self.expect(&token::Comma)
+                    .map_err(|err| ((fields.clone(), ddpos), err))?;
             }
         }
 
@@ -3690,11 +3695,11 @@ impl<'a> Parser<'a> {
         }))
     }
 
-    /// A wrapper around `parse_pat` with some special error handling for the
-    /// "top-level" patterns in a match arm, `for` loop, `let`, &c. (in contast
-    /// to subpatterns within such).
+    /// A wrapper around `parse_pat` with some special error handling and
+    /// recovery for the "top-level" patterns in a match arm, `for` loop,
+    /// `let`, &c. (in contast to subpatterns within such).
     pub fn parse_top_level_pat(&mut self) -> PResult<'a, P<Pat>> {
-        let pat = self.parse_pat()?;
+        let mut pat = self.parse_pat()?;
         if self.token == token::Comma {
             // An unexpected comma after a top-level pattern is a clue that the
             // user (perhaps more accustomed to some other language) forgot the
@@ -3703,12 +3708,21 @@ impl<'a> Parser<'a> {
             // later.
             let comma_span = self.span;
             self.bump();
-            if let Err(mut err) = self.parse_pat_tuple_elements(false) {
-                // We didn't expect this to work anyway; we just wanted
-                // to advance to the end of the comma-sequence so we know
-                // the span to suggest parenthesizing
-                err.cancel();
-            }
+            let mut fields = vec![pat.clone()];
+            let (rest_fields, ddpos) = match self.parse_pat_tuple_elements(false) {
+                Ok(fields_ddpos) => fields_ddpos,
+                Err((fields_ddpos, mut err)) => {
+                    // We didn't really expect this to work anyway; we want the
+                    // partial result (so that post-recovery code knows about
+                    // any bindings) and to advance to the end of the
+                    // comma-sequence (so we know the span to suggest
+                    // parenthesizing), but we'll emit our own error in just a
+                    // moment
+                    err.cancel();
+                    fields_ddpos
+                }
+            };
+            fields.extend(rest_fields);
             let seq_span = pat.span.to(self.prev_span);
             let mut err = self.struct_span_err(comma_span,
                                                "unexpected `,` in pattern");
@@ -3717,6 +3731,11 @@ impl<'a> Parser<'a> {
                                     format!("({})", seq_snippet));
             }
             err.emit();
+            // Now that we've emitted our own error, the rest of the parser
+            // can pretend this was actually a tuple
+            pat = P(Pat { node: PatKind::Tuple(fields, ddpos),
+                          span: seq_span,
+                          id: ast::DUMMY_NODE_ID });
         }
         Ok(pat)
     }
@@ -3746,7 +3765,8 @@ impl<'a> Parser<'a> {
             token::OpenDelim(token::Paren) => {
                 // Parse (pat,pat,pat,...) as tuple pattern
                 self.bump();
-                let (fields, ddpos) = self.parse_pat_tuple_elements(true)?;
+                let (fields, ddpos) = self.parse_pat_tuple_elements(true)
+                    .map_err(|(_partial, err)| err)?;
                 self.expect(&token::CloseDelim(token::Paren))?;
                 pat = PatKind::Tuple(fields, ddpos);
             }
@@ -3839,7 +3859,8 @@ impl<'a> Parser<'a> {
                         }
                         // Parse tuple struct or enum pattern
                         self.bump();
-                        let (fields, ddpos) = self.parse_pat_tuple_elements(false)?;
+                        let (fields, ddpos) = self.parse_pat_tuple_elements(false)
+                            .map_err(|(_partial, err)| err)?;
                         self.expect(&token::CloseDelim(token::Paren))?;
                         pat = PatKind::TupleStruct(path, fields, ddpos)
                     }

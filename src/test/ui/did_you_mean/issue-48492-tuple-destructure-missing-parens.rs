@@ -42,10 +42,15 @@ struct Genome {
     allosomes: (Allosome, Allosome)
 }
 
+fn three_slice_to_tuple<T>(slice: &[T]) -> (T, T, T) {
+    (slice[0], slice[1], slice[2])
+}
+
 fn find_start_codon(strand: &[Nucleotide]) -> Option<usize> {
     let mut reading_frame = strand.windows(3);
-    while let b1, b2, b3 = reading_frame.next().expect("there should be a start codon") {
-        //~^ ERROR unexpected `,` in pattern
+    while let b1, b2, b3 = three_slice_to_tuple(reading_frame.next()
+    //~^ ERROR unexpected `,` in pattern
+                                                .expect("there should be a start codon")) {
         // ...
     }
     None
@@ -54,11 +59,9 @@ fn find_start_codon(strand: &[Nucleotide]) -> Option<usize> {
 fn find_thr(strand: &[Nucleotide]) -> Option<usize> {
     let mut reading_frame = strand.windows(3);
     let mut i = 0;
-    if let b1, b2, b3 = reading_frame.next().unwrap() {
+    if let b1, b2, b3 = three_slice_to_tuple(reading_frame.next().unwrap()) {
         //~^ ERROR unexpected `,` in pattern
         match (b1, b2, b3) {
-            //~^ ERROR cannot find value `b2` in this scope
-            //~| ERROR cannot find value `b3` in this scope
             Nucleotide::Adenine, Nucleotide::Cytosine, _ => {
                 //~^ ERROR unexpected `,` in pattern
                 return Some(i);
