@@ -1083,7 +1083,7 @@ pub fn walk_arm<'v, V: Visitor<'v>>(visitor: &mut V, arm: &'v Arm) {
 }
 
 pub fn walk_vis<'v, V: Visitor<'v>>(visitor: &mut V, vis: &'v Visibility) {
-    if let Visibility::Restricted { ref path, id } = *vis {
+    if let Visibility::Restricted { ref path, id, .. } = *vis {
         visitor.visit_id(id);
         visitor.visit_path(path, id)
     }

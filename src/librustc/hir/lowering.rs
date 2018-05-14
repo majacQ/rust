@@ -2429,18 +2429,14 @@ impl<'a> LoweringContext<'a> {
                         self.lower_use_tree(use_tree, &prefix, new_id, &mut vis, &mut name, &attrs);
 
                     self.with_hir_id_owner(new_id, |this| {
-                        let vis = match vis {
-                            hir::Visibility::Public => hir::Visibility::Public,
-                            hir::Visibility::Crate => hir::Visibility::Crate,
-                            hir::Visibility::Inherited => hir::Visibility::Inherited,
-                            hir::Visibility::Restricted { ref path, id: _ } => {
-                                hir::Visibility::Restricted {
-                                    path: path.clone(),
-                                    // We are allocating a new NodeId here
-                                    id: this.next_id().node_id,
-                                }
+                        if let hir::Visibility::Restricted { span, path, id: _ } = vis {
+                            vis = hir::Visibility::Restricted {
+                                span,
+                                path: path.clone(),
+                                // We are allocating a new NodeId here
+                                id: this.next_id().node_id,
                             }
-                        };
+                        }
 
                         this.items.insert(
                             new_id,
@@ -3699,10 +3695,12 @@ impl<'a> LoweringContext<'a> {
         v: &Visibility,
         explicit_owner: Option<NodeId>,
     ) -> hir::Visibility {
+        info!("visibility: {:?}", v);
         match v.node {
-            VisibilityKind::Public => hir::Public,
-            VisibilityKind::Crate(..) => hir::Visibility::Crate,
+            VisibilityKind::Public => hir::Public { span: v.span },
+            VisibilityKind::Crate(..) => hir::Visibility::Crate { span: v.span },
             VisibilityKind::Restricted { ref path, id, .. } => hir::Visibility::Restricted {
+                span: v.span,
                 path: P(self.lower_path(id, path, ParamMode::Explicit)),
                 id: if let Some(owner) = explicit_owner {
                     self.lower_node_id_with_owner(id, owner).node_id

@@ -1969,19 +1969,27 @@ pub struct PolyTraitRef {
 
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub enum Visibility {
-    Public,
-    Crate,
-    Restricted { path: P<Path>, id: NodeId },
+    Public { span: Span },
+    Crate { span: Span },
+    Restricted { span: Span, path: P<Path>, id: NodeId },
     Inherited,
 }
 
 impl Visibility {
+    pub fn is_pub(&self) -> bool {
+        use self::Visibility::*;
+        match self {
+            &Public { .. } => true,
+            _ => false
+        }
+    }
+
     pub fn is_pub_restricted(&self) -> bool {
         use self::Visibility::*;
         match self {
-            &Public |
+            &Public { .. } |
             &Inherited => false,
-            &Crate |
+            &Crate { .. } |
             &Restricted { .. } => true,
         }
     }
@@ -2331,4 +2339,3 @@ impl TransFnAttrs {
         self.flags.contains(TransFnAttrFlags::NO_MANGLE) || self.export_name.is_some()
     }
 }
-

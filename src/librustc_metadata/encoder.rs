@@ -324,7 +324,8 @@ impl<'a, 'tcx> EncodeContext<'a, 'tcx> {
         let mut index = IndexBuilder::new(self);
         index.record(DefId::local(CRATE_DEF_INDEX),
                      IsolatedEncoder::encode_info_for_mod,
-                     FromId(CRATE_NODE_ID, (&krate.module, &krate.attrs, &hir::Public)));
+                     // XXX ZMD TODO: is this dummy_span OK??
+                     FromId(CRATE_NODE_ID, (&krate.module, &krate.attrs, &hir::Public { span: DUMMY_SP })));
         let mut visitor = EncodeVisitor { index: index };
         krate.visit_all_item_likes(&mut visitor.as_deep_visitor());
         for macro_def in &krate.exported_macros {

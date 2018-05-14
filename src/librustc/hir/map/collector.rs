@@ -448,16 +448,11 @@ impl<'a, 'hir> Visitor<'hir> for NodeCollector<'a, 'hir> {
     }
 
     fn visit_vis(&mut self, visibility: &'hir Visibility) {
-        match *visibility {
-            Visibility::Public |
-            Visibility::Crate |
-            Visibility::Inherited => {}
-            Visibility::Restricted { id, .. } => {
-                self.insert(id, NodeVisibility(visibility));
-                self.with_parent(id, |this| {
-                    intravisit::walk_vis(this, visibility);
-                });
-            }
+        if let Visibility::Restricted { id, .. } = *visibility  {
+            self.insert(id, NodeVisibility(visibility));
+            self.with_parent(id, |this| {
+                intravisit::walk_vis(this, visibility);
+            });
         }
     }
 

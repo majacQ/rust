@@ -761,12 +761,13 @@ impl<'a> HashStable<StableHashingContext<'a>> for hir::Visibility {
                                           hasher: &mut StableHasher<W>) {
         mem::discriminant(self).hash_stable(hcx, hasher);
         match *self {
-            hir::Visibility::Public |
-            hir::Visibility::Crate |
+            hir::Visibility::Public { .. } |
+            hir::Visibility::Crate { .. } |
             hir::Visibility::Inherited => {
-                // No fields to hash.
+                // XXX ZMD TODO: figure out the appropriate hashy thing to do here
             }
-            hir::Visibility::Restricted { ref path, id } => {
+            hir::Visibility::Restricted { ref path, id, span: _ } => {
+                // XXX ZMD TODO: figure out correct hashing
                 hcx.with_node_id_hashing_mode(NodeIdHashingMode::HashDefPath, |hcx| {
                     id.hash_stable(hcx, hasher);
                 });

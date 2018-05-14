@@ -801,8 +801,8 @@ impl<'a> State<'a> {
 
     pub fn print_visibility(&mut self, vis: &hir::Visibility) -> io::Result<()> {
         match *vis {
-            hir::Public => self.word_nbsp("pub"),
-            hir::Visibility::Crate => self.word_nbsp("pub(crate)"),
+            hir::Public { .. } => self.word_nbsp("pub"),
+            hir::Visibility::Crate { .. } => self.word_nbsp("pub(crate)"),
             hir::Visibility::Restricted { ref path, .. } => {
                 self.s.word("pub(")?;
                 self.print_path(path, false)?;
