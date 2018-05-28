@@ -238,6 +238,7 @@ pub trait Visitor<'v> : Sized {
 
     ///////////////////////////////////////////////////////////////////////////
 
+    // FIXME (#50928): should this take a HirId, or should we introduce `visit_hir_id`?
     fn visit_id(&mut self, _node_id: NodeId) {
         // Nothing to do.
     }
@@ -942,12 +943,12 @@ pub fn walk_block<'v, V: Visitor<'v>>(visitor: &mut V, block: &'v Block) {
 
 pub fn walk_stmt<'v, V: Visitor<'v>>(visitor: &mut V, statement: &'v Stmt) {
     match statement.node {
-        StmtDecl(ref declaration, id) => {
+        StmtDecl(ref declaration, id, _hir_id) => {
             visitor.visit_id(id);
             visitor.visit_decl(declaration)
         }
-        StmtExpr(ref expression, id) |
-        StmtSemi(ref expression, id) => {
+        StmtExpr(ref expression, id, _hir_id) |
+        StmtSemi(ref expression, id, _hir_id) => {
             visitor.visit_id(id);
             visitor.visit_expr(expression)
         }

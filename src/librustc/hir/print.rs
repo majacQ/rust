@@ -1006,14 +1006,14 @@ impl<'a> State<'a> {
     pub fn print_stmt(&mut self, st: &hir::Stmt) -> io::Result<()> {
         self.maybe_print_comment(st.span.lo())?;
         match st.node {
-            hir::StmtDecl(ref decl, _) => {
+            hir::StmtDecl(ref decl, ..) => {
                 self.print_decl(&decl)?;
             }
-            hir::StmtExpr(ref expr, _) => {
+            hir::StmtExpr(ref expr, ..) => {
                 self.space_if_not_bol()?;
                 self.print_expr(&expr)?;
             }
-            hir::StmtSemi(ref expr, _) => {
+            hir::StmtSemi(ref expr, ..) => {
                 self.space_if_not_bol()?;
                 self.print_expr(&expr)?;
                 self.s.word(";")?;
@@ -2253,6 +2253,7 @@ impl<'a> State<'a> {
             params: hir::HirVec::new(),
             where_clause: hir::WhereClause {
                 id: ast::DUMMY_NODE_ID,
+                hir_id: hir::DUMMY_HIR_ID,
                 predicates: hir::HirVec::new(),
             },
             span: syntax_pos::DUMMY_SP,
@@ -2398,13 +2399,13 @@ fn expr_requires_semi_to_be_stmt(e: &hir::Expr) -> bool {
 /// seen the semicolon, and thus don't need another.
 fn stmt_ends_with_semi(stmt: &hir::Stmt_) -> bool {
     match *stmt {
-        hir::StmtDecl(ref d, _) => {
+        hir::StmtDecl(ref d, ..) => {
             match d.node {
                 hir::DeclLocal(_) => true,
                 hir::DeclItem(_) => false,
             }
         }
-        hir::StmtExpr(ref e, _) => {
+        hir::StmtExpr(ref e, ..) => {
             expr_requires_semi_to_be_stmt(&e)
         }
         hir::StmtSemi(..) => {

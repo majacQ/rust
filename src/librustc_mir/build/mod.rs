@@ -203,7 +203,7 @@ fn create_constructor_shim<'a, 'tcx>(tcx: TyCtxt<'a, 'tcx, 'tcx>,
                                      -> Mir<'tcx>
 {
     let span = tcx.hir.span(ctor_id);
-    if let hir::VariantData::Tuple(ref fields, ctor_id) = *v {
+    if let hir::VariantData::Tuple(ref fields, ctor_id, _) = *v {
         tcx.infer_ctxt().enter(|infcx| {
             let mut mir = shim::build_adt_ctor(&infcx, ctor_id, fields, span);
 

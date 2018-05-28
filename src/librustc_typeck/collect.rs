@@ -1178,9 +1178,9 @@ fn fn_sig<'a, 'tcx>(tcx: TyCtxt<'a, 'tcx, 'tcx>,
             compute_sig_of_foreign_fn_decl(tcx, def_id, fn_decl, abi)
         }
 
-        NodeStructCtor(&VariantData::Tuple(ref fields, _)) |
+        NodeStructCtor(&VariantData::Tuple(ref fields, ..)) |
         NodeVariant(&Spanned { node: hir::Variant_ {
-            data: VariantData::Tuple(ref fields, _), ..
+            data: VariantData::Tuple(ref fields, ..), ..
         }, .. }) => {
             let ty = tcx.type_of(tcx.hir.get_parent_did(node_id));
             let inputs = fields.iter().map(|f| {

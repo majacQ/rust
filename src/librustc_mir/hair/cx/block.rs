@@ -55,8 +55,8 @@ fn mirror_stmts<'a, 'gcx, 'tcx>(cx: &mut Cx<'a, 'gcx, 'tcx>,
         let hir_id = cx.tcx.hir.node_to_hir_id(stmt.node.id());
         let opt_dxn_ext = cx.region_scope_tree.opt_destruction_scope(hir_id.local_id);
         match stmt.node {
-            hir::StmtExpr(ref expr, _) |
-            hir::StmtSemi(ref expr, _) => {
+            hir::StmtExpr(ref expr, ..) |
+            hir::StmtSemi(ref expr, ..) => {
                 result.push(StmtRef::Mirror(Box::new(Stmt {
                     kind: StmtKind::Expr {
                         scope: region::Scope::Node(hir_id.local_id),
@@ -65,7 +65,7 @@ fn mirror_stmts<'a, 'gcx, 'tcx>(cx: &mut Cx<'a, 'gcx, 'tcx>,
                     opt_destruction_scope: opt_dxn_ext,
                 })))
             }
-            hir::StmtDecl(ref decl, _) => {
+            hir::StmtDecl(ref decl, ..) => {
                 match decl.node {
                     hir::DeclItem(..) => {
                         // ignore for purposes of the MIR

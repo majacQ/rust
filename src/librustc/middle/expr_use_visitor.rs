@@ -586,7 +586,7 @@ impl<'a, 'gcx, 'tcx> ExprUseVisitor<'a, 'gcx, 'tcx> {
 
     fn walk_stmt(&mut self, stmt: &hir::Stmt) {
         match stmt.node {
-            hir::StmtDecl(ref decl, _) => {
+            hir::StmtDecl(ref decl, ..) => {
                 match decl.node {
                     hir::DeclLocal(ref local) => {
                         self.walk_local(&local);
@@ -599,8 +599,8 @@ impl<'a, 'gcx, 'tcx> ExprUseVisitor<'a, 'gcx, 'tcx> {
                 }
             }
 
-            hir::StmtExpr(ref expr, _) |
-            hir::StmtSemi(ref expr, _) => {
+            hir::StmtExpr(ref expr, ..) |
+            hir::StmtSemi(ref expr, ..) => {
                 self.consume_expr(&expr);
             }
         }

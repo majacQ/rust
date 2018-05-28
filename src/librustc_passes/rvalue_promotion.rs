@@ -216,7 +216,7 @@ impl<'a, 'tcx> Visitor<'tcx> for CheckCrateVisitor<'a, 'tcx> {
 
     fn visit_stmt(&mut self, stmt: &'tcx hir::Stmt) {
         match stmt.node {
-            hir::StmtDecl(ref decl, _) => {
+            hir::StmtDecl(ref decl, ..) => {
                 match &decl.node {
                     hir::DeclLocal(local) => {
                         self.promotable = false;

@@ -187,6 +187,7 @@ impl fmt::Debug for Label {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Copy)]
 pub struct Lifetime {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub span: Span,
 
     /// Either "'a", referring to a named lifetime definition,
@@ -494,6 +495,7 @@ pub enum GenericParamKind {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct GenericParam {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub name: ParamName,
     pub attrs: HirVec<Attribute>,
     pub bounds: GenericBounds,
@@ -523,6 +525,7 @@ impl Generics {
             params: HirVec::new(),
             where_clause: WhereClause {
                 id: DUMMY_NODE_ID,
+                hir_id: DUMMY_HIR_ID,
                 predicates: HirVec::new(),
             },
             span: DUMMY_SP,
@@ -569,6 +572,7 @@ pub enum SyntheticTyParamKind {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct WhereClause {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub predicates: HirVec<WherePredicate>,
 }
 
@@ -629,6 +633,7 @@ pub struct WhereRegionPredicate {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct WhereEqPredicate {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub span: Span,
     pub lhs_ty: P<Ty>,
     pub rhs_ty: P<Ty>,
@@ -839,6 +844,7 @@ impl Pat {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct FieldPat {
     pub id: NodeId,
+    pub hir_id: HirId,
     /// The identifier for the field
     pub ident: Ident,
     /// The pattern the field is destructured to
@@ -1106,31 +1112,40 @@ impl fmt::Debug for Stmt_ {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash)]
 pub enum Stmt_ {
     /// Could be an item or a local (let) binding:
-    StmtDecl(P<Decl>, NodeId),
+    StmtDecl(P<Decl>, NodeId, HirId),
 
     /// Expr without trailing semi-colon (must have unit type):
-    StmtExpr(P<Expr>, NodeId),
+    StmtExpr(P<Expr>, NodeId, HirId),
 
     /// Expr with trailing semi-colon (may have any type):
-    StmtSemi(P<Expr>, NodeId),
+    StmtSemi(P<Expr>, NodeId, HirId),
 }
 
 impl Stmt_ {
     pub fn attrs(&self) -> &[Attribute] {
         match *self {
-            StmtDecl(ref d, _) => d.node.attrs(),
-            StmtExpr(ref e, _) |
-            StmtSemi(ref e, _) => &e.attrs,
+            StmtDecl(ref d, _, _) => d.node.attrs(),
+            StmtExpr(ref e, _, _) |
+            StmtSemi(ref e, _, _) => &e.attrs,
         }
     }
 
     pub fn id(&self) -> NodeId {
         match *self {
-            StmtDecl(_, id) => id,
-            StmtExpr(_, id) => id,
-            StmtSemi(_, id) => id,
+            StmtDecl(_, id, _) => id,
+            StmtExpr(_, id, _) => id,
+            StmtSemi(_, id, _) => id,
         }
     }
+
+    pub fn hir_id(&self) -> HirId {
+        match *self {
+            StmtDecl(_, _, hir_id) |
+            StmtExpr(_, _, hir_id) |
+            StmtSemi(_, _, hir_id) => hir_id,
+        }
+    }
+
 }
 
 /// Local represents a `let` statement, e.g., `let <pat>:<ty> = <expr>;`
@@ -1185,6 +1200,7 @@ pub struct Arm {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct Field {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub ident: Ident,
     pub expr: P<Expr>,
     pub span: Span,
@@ -1274,10 +1290,10 @@ pub struct AnonConst {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash)]
 pub struct Expr {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub span: Span,
     pub node: Expr_,
     pub attrs: ThinVec<Attribute>,
-    pub hir_id: HirId,
 }
 
 impl Expr {
@@ -1620,6 +1636,7 @@ pub enum ImplItemKind {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct TypeBinding {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub ident: Ident,
     pub ty: P<Ty>,
     pub span: Span,
@@ -1629,9 +1646,9 @@ pub struct TypeBinding {
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash)]
 pub struct Ty {
     pub id: NodeId,
+    pub hir_id: HirId,
     pub node: Ty_,
     pub span: Span,
-    pub hir_id: HirId,
 }
 
 impl fmt::Debug for Ty {
@@ -1911,7 +1928,7 @@ pub enum UseKind {
 /// resolve maps each TraitRef's ref_id to its defining trait; that's all
 /// that the ref_id is for. Note that ref_id's value is not the NodeId of the
 /// trait being referred to but just a unique NodeId that serves as a key
-/// within the DefMap.
+/// within the DefMap (FIXME: ... which is kind of confusing).
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct TraitRef {
     pub path: Path,
@@ -1951,10 +1968,11 @@ impl Visibility {
 
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct StructField {
+    pub id: NodeId,
+    pub hir_id: HirId,
     pub span: Span,
     pub ident: Ident,
     pub vis: Visibility,
-    pub id: NodeId,
     pub ty: P<Ty>,
     pub attrs: HirVec<Attribute>,
 }
@@ -1980,21 +1998,30 @@ impl StructField {
 /// Id of the whole struct lives in `Item`.
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub enum VariantData {
-    Struct(HirVec<StructField>, NodeId),
-    Tuple(HirVec<StructField>, NodeId),
-    Unit(NodeId),
+    Struct(HirVec<StructField>, NodeId, HirId),
+    Tuple(HirVec<StructField>, NodeId, HirId),
+    Unit(NodeId, HirId),
 }
 
 impl VariantData {
     pub fn fields(&self) -> &[StructField] {
         match *self {
-            VariantData::Struct(ref fields, _) | VariantData::Tuple(ref fields, _) => fields,
+            VariantData::Struct(ref fields, _, _) | VariantData::Tuple(ref fields, _, _) => fields,
             _ => &[],
         }
     }
     pub fn id(&self) -> NodeId {
         match *self {
-            VariantData::Struct(_, id) | VariantData::Tuple(_, id) | VariantData::Unit(id) => id,
+            VariantData::Struct(_, id, _) |
+            VariantData::Tuple(_, id, _) |
+            VariantData::Unit(id, _) => id,
+        }
+    }
+    pub fn hir_id(&self) -> HirId {
+        match *self {
+            VariantData::Struct(_, _, hir_id) |
+            VariantData::Tuple(_, _, hir_id) |
+            VariantData::Unit(_, hir_id) => hir_id,
         }
     }
     pub fn is_struct(&self) -> bool {
@@ -2186,10 +2213,11 @@ pub enum AssociatedItemKind {
 
 #[derive(Clone, PartialEq, Eq, RustcEncodable, RustcDecodable, Hash, Debug)]
 pub struct ForeignItem {
+    pub id: NodeId,
+    pub hir_id: HirId,
     pub name: Name,
     pub attrs: HirVec<Attribute>,
     pub node: ForeignItem_,
-    pub id: NodeId,
     pub span: Span,
     pub vis: Visibility,
 }

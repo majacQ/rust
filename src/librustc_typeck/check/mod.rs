@@ -4324,7 +4324,7 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
     pub fn check_stmt(&self, stmt: &'gcx hir::Stmt) {
         // Don't do all the complex logic below for DeclItem.
         match stmt.node {
-            hir::StmtDecl(ref decl, _) => {
+            hir::StmtDecl(ref decl, ..) => {
                 match decl.node {
                     hir::DeclLocal(_) => {}
                     hir::DeclItem(_) => {
@@ -4344,7 +4344,7 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
         self.has_errors.set(false);
 
         match stmt.node {
-            hir::StmtDecl(ref decl, _) => {
+            hir::StmtDecl(ref decl, ..) => {
                 match decl.node {
                     hir::DeclLocal(ref l) => {
                         self.check_decl_local(&l);
@@ -4352,11 +4352,11 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
                     hir::DeclItem(_) => {/* ignore for now */}
                 }
             }
-            hir::StmtExpr(ref expr, _) => {
+            hir::StmtExpr(ref expr, ..) => {
                 // Check with expected type of ()
                 self.check_expr_has_type_or_error(&expr, self.tcx.mk_nil());
             }
-            hir::StmtSemi(ref expr, _) => {
+            hir::StmtSemi(ref expr, ..) => {
                 self.check_expr(&expr);
             }
         }
@@ -4680,7 +4680,7 @@ impl<'a, 'gcx, 'tcx> FnCtxt<'a, 'gcx, 'tcx> {
             None => return,
         };
         let last_expr = match last_stmt.node {
-            hir::StmtSemi(ref e, _) => e,
+            hir::StmtSemi(ref e, ..) => e,
             _ => return,
         };
         let last_expr_ty = self.node_ty(last_expr.hir_id);

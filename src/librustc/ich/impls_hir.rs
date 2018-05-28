@@ -160,6 +160,7 @@ impl_stable_hash_for!(struct hir::Label {
 
 impl_stable_hash_for!(struct hir::Lifetime {
     id,
+    hir_id,
     span,
     name
 });
@@ -199,6 +200,7 @@ impl_stable_hash_for!(enum hir::TraitBoundModifier {
 
 impl_stable_hash_for!(struct hir::GenericParam {
     id,
+    hir_id,
     name,
     pure_wrt_drop,
     attrs,
@@ -236,6 +238,7 @@ impl_stable_hash_for!(enum hir::SyntheticTyParamKind {
 
 impl_stable_hash_for!(struct hir::WhereClause {
     id,
+    hir_id,
     predicates
 });
 
@@ -260,6 +263,7 @@ impl_stable_hash_for!(struct hir::WhereRegionPredicate {
 
 impl_stable_hash_for!(struct hir::WhereEqPredicate {
     id,
+    hir_id,
     span,
     lhs_ty,
     rhs_ty
@@ -277,6 +281,7 @@ impl_stable_hash_for!(struct hir::MethodSig {
 
 impl_stable_hash_for!(struct hir::TypeBinding {
     id,
+    hir_id,
     ident -> (ident.name),
     ty,
     span
@@ -407,6 +412,7 @@ impl_stable_hash_for_spanned!(hir::FieldPat);
 
 impl_stable_hash_for!(struct hir::FieldPat {
     id -> _,
+    hir_id,
     ident -> (ident.name),
     pat,
     is_shorthand,
@@ -495,6 +501,7 @@ impl_stable_hash_for!(struct hir::Arm {
 
 impl_stable_hash_for!(struct hir::Field {
     id -> _,
+    hir_id,
     ident,
     expr,
     span,
@@ -787,18 +794,19 @@ impl_stable_hash_for!(enum hir::UseKind {
 });
 
 impl_stable_hash_for!(struct hir::StructField {
+    id,
+    hir_id,
     span,
     ident -> (ident.name),
     vis,
-    id,
     ty,
     attrs
 });
 
 impl_stable_hash_for!(enum hir::VariantData {
-    Struct(fields, id),
-    Tuple(fields, id),
-    Unit(id)
+    Struct(fields, id, hir_id),
+    Tuple(fields, id, hir_id),
+    Unit(id, hir_id)
 });
 
 impl<'a> HashStable<StableHashingContext<'a>> for hir::Item {
@@ -879,10 +887,11 @@ impl<'a> HashStable<StableHashingContext<'a>> for hir::AssociatedItemKind {
 }
 
 impl_stable_hash_for!(struct hir::ForeignItem {
+    id,
+    hir_id,
     name,
     attrs,
     node,
-    id,
     span,
     vis
 });
@@ -894,9 +903,9 @@ impl_stable_hash_for!(enum hir::ForeignItem_ {
 });
 
 impl_stable_hash_for!(enum hir::Stmt_ {
-    StmtDecl(decl, id),
-    StmtExpr(expr, id),
-    StmtSemi(expr, id)
+    StmtDecl(decl, id, hir_id),
+    StmtExpr(expr, id, hir_id),
+    StmtSemi(expr, id, hir_id)
 });
 
 impl_stable_hash_for!(struct hir::Arg {

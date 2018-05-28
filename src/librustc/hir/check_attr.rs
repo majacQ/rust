@@ -269,7 +269,7 @@ impl<'a, 'tcx> CheckAttrVisitor<'a, 'tcx> {
 
     fn check_stmt_attributes(&self, stmt: &hir::Stmt) {
         // When checking statements ignore expressions, they will be checked later
-        if let hir::Stmt_::StmtDecl(_, _) = stmt.node {
+        if let hir::Stmt_::StmtDecl(..) = stmt.node {
             for attr in stmt.node.attrs() {
                 if attr.check_name("inline") {
                     self.check_inline(attr, &stmt.span, Target::Statement);
@@ -348,7 +348,7 @@ fn is_c_like_enum(item: &hir::Item) -> bool {
     if let hir::ItemEnum(ref def, _) = item.node {
         for variant in &def.variants {
             match variant.node.data {
-                hir::VariantData::Unit(_) => { /* continue */ }
+                hir::VariantData::Unit(..) => { /* continue */ }
                 _ => { return false; }
             }
         }
