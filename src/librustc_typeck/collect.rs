@@ -722,8 +722,7 @@ fn has_late_bound_regions<'a, 'tcx>(tcx: TyCtxt<'a, 'tcx, 'tcx>,
         fn visit_lifetime(&mut self, lt: &'tcx hir::Lifetime) {
             if self.has_late_bound_regions.is_some() { return }
 
-            let hir_id = self.tcx.hir.node_to_hir_id(lt.id);
-            match self.tcx.named_region(hir_id) {
+            match self.tcx.named_region(lt.hir_id) {
                 Some(rl::Region::Static) | Some(rl::Region::EarlyBound(..)) => {}
                 Some(rl::Region::LateBound(debruijn, _, _)) |
                 Some(rl::Region::LateBoundAnon(debruijn, _))
@@ -750,8 +749,7 @@ fn has_late_bound_regions<'a, 'tcx>(tcx: TyCtxt<'a, 'tcx, 'tcx>,
         for param in &generics.params {
             match param.kind {
                 GenericParamKind::Lifetime { .. } => {
-                    let hir_id = tcx.hir.node_to_hir_id(param.id);
-                    if tcx.is_late_bound(hir_id) {
+                    if tcx.is_late_bound(param.hir_id) {
                         return Some(param.span);
                     }
                 }
@@ -1303,8 +1301,7 @@ fn early_bound_lifetimes_from_generics<'a, 'tcx>(
 {
     generics.params.iter().filter(move |param| match param.kind {
         GenericParamKind::Lifetime { .. } => {
-            let hir_id = tcx.hir.node_to_hir_id(param.id);
-            !tcx.is_late_bound(hir_id)
+            !tcx.is_late_bound(param.hir_id)
         }
         _ => false,
     })
