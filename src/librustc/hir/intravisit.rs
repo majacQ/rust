@@ -238,8 +238,10 @@ pub trait Visitor<'v> : Sized {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    // FIXME (#50928): should this take a HirId, or should we introduce `visit_hir_id`?
     fn visit_id(&mut self, _node_id: NodeId) {
+        // Nothing to do.
+    }
+    fn visit_hir_id(&mut self, _hir_id: HirId) {
         // Nothing to do.
     }
     fn visit_def_mention(&mut self, _def: Def) {
