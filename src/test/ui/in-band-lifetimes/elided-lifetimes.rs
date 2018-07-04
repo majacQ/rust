@@ -7,12 +7,17 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-#![allow(warnings)]
-#![allow(unused_variables, dead_code, unused, bad_style)]
+
+#![allow(unused)]
 #![deny(elided_lifetimes_in_paths)]
 
 struct Foo<'a> { x: &'a u32 }
+
 fn foo(x: &Foo) {
+    //~^ ERROR: hidden lifetime parameters are deprecated, try `Foo<'_>`
+}
+
+fn bar(x: &Foo<'_>) {
     //~^ ERROR: hidden lifetime parameters are deprecated, try `Foo<'_>`
 }
 
