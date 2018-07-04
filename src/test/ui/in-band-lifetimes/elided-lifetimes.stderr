@@ -1,4 +1,4 @@
-error: hidden lifetime parameters are deprecated, try `Foo<'_>`
+error: implicit lifetime parameters in types are deprecated
   --> $DIR/elided-lifetimes.rs:16:12
    |
 LL | fn foo(x: &Foo) {
@@ -10,11 +10,5 @@ note: lint level defined here
 LL | #![deny(elided_lifetimes_in_paths)]
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: hidden lifetime parameters are deprecated, try `Foo<'_>`
-  --> $DIR/elided-lifetimes.rs:20:16
-   |
-LL | fn bar(x: &Foo<'_>) {
-   |                ^^
-
-error: aborting due to 2 previous errors
+error: aborting due to previous error
 

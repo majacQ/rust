@@ -2068,24 +2068,24 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
 
     fn resolve_elided_lifetimes(&mut self,
                                 lifetime_refs: Vec<&'tcx hir::Lifetime>,
-                                deprecated: bool) {
+                                deprecate_implicit: bool) {
         if lifetime_refs.is_empty() {
             return;
         }
 
         let span = lifetime_refs[0].span;
-        let id = lifetime_refs[0].id;
         let mut late_depth = 0;
         let mut scope = self.scope;
-        if deprecated {
-            self.tcx
-                .struct_span_lint_node(
-                    lint::builtin::ELIDED_LIFETIMES_IN_PATHS,
-                    id,
-                    span,
-                    &format!("hidden lifetime parameters are deprecated, try `Foo<'_>`"),
-                )
-                .emit();
+        if deprecate_implicit && lifetime_refs[0].name.is_implicit() {
+            let mut err = self.tcx.struct_span_lint_node(
+                lint::builtin::ELIDED_LIFETIMES_IN_PATHS,
+                lifetime_refs[0].id, // FIXME: HirIdify #50928
+                span,
+                &format!("implicit lifetime parameters in types are deprecated"),
+            );
+            // FIXME: suggest `'_` (need to take into account whether angle-bracketed
+            // params already exist)
+            err.emit();
         }
         let error = loop {
             match *scope {
