@@ -252,7 +252,7 @@ declare_lint! {
 declare_lint! {
     pub ELIDED_LIFETIMES_IN_PATHS,
     Allow,
-    "hidden lifetime parameters are deprecated, try `Foo<'_>`"
+    "implicit lifetime parameters are deprecated"
 }
 
 declare_lint! {

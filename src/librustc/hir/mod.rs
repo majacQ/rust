@@ -272,6 +272,10 @@ impl LifetimeName {
         }
     }
 
+    pub fn is_implicit(&self) -> bool {
+        self == &LifetimeName::Implicit
+    }
+
     fn is_static(&self) -> bool {
         self == &LifetimeName::Static
     }

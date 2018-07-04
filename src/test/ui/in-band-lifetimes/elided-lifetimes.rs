@@ -14,11 +14,9 @@
 struct Foo<'a> { x: &'a u32 }
 
 fn foo(x: &Foo) {
-    //~^ ERROR: hidden lifetime parameters are deprecated, try `Foo<'_>`
+    //~^ ERROR: implicit lifetime parameters in types are deprecated
 }
 
-fn bar(x: &Foo<'_>) {
-    //~^ ERROR: hidden lifetime parameters are deprecated, try `Foo<'_>`
-}
+fn bar(x: &Foo<'_>) {}
 
 fn main() {}
