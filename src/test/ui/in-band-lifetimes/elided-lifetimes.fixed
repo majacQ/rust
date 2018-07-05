@@ -20,7 +20,7 @@ use std::cell::{RefCell, Ref};
 
 struct Foo<'a> { x: &'a u32 }
 
-fn foo(x: &Foo) {
+fn foo(x: &Foo<'_>) {
     //~^ ERROR implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
 }
@@ -30,7 +30,7 @@ fn bar(x: &Foo<'_>) {}
 
 struct Wrapped<'a>(&'a str);
 
-fn wrap_gift(gift: &str) -> Wrapped {
+fn wrap_gift(gift: &str) -> Wrapped<'_> {
     //~^ ERROR implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
     Wrapped(gift)
@@ -39,7 +39,7 @@ fn wrap_gift(gift: &str) -> Wrapped {
 
 fn main() {
     let honesty = RefCell::new((4, 'e'));
-    let loyalty: Ref<(u32, char)> = honesty.borrow();
+    let loyalty: Ref<'_, (u32, char)> = honesty.borrow();
     //~^ ERROR implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
 }

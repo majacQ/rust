@@ -21,7 +21,7 @@ use hir::map::Map;
 use hir::{GenericArg, GenericParam, ItemLocalId, LifetimeName, ParamName};
 use ty::{self, TyCtxt, GenericParamDefKind};
 
-use errors::DiagnosticBuilder;
+use errors::{Applicability, DiagnosticBuilder};
 use rustc::lint;
 use rustc_data_structures::sync::Lrc;
 use session::Session;
@@ -609,7 +609,7 @@ impl<'a, 'tcx> Visitor<'tcx> for LifetimeContext<'a, 'tcx> {
                         // resolved the same as the `'_` in `&'_ Foo`.
                         //
                         // cc #48468
-                        self.resolve_elided_lifetimes(vec![lifetime], false)
+                        self.resolve_elided_lifetimes(vec![lifetime])
                     }
                     LifetimeName::Param(_) | LifetimeName::Static => {
                         // If the user wrote an explicit name, use that.
@@ -855,7 +855,7 @@ impl<'a, 'tcx> Visitor<'tcx> for LifetimeContext<'a, 'tcx> {
 
     fn visit_lifetime(&mut self, lifetime_ref: &'tcx hir::Lifetime) {
         if lifetime_ref.is_elided() {
-            self.resolve_elided_lifetimes(vec![lifetime_ref], false);
+            self.resolve_elided_lifetimes(vec![lifetime_ref]);
             return;
         }
         if lifetime_ref.is_static() {
@@ -866,10 +866,10 @@ impl<'a, 'tcx> Visitor<'tcx> for LifetimeContext<'a, 'tcx> {
     }
 
     fn visit_path(&mut self, path: &'tcx hir::Path, _: ast::NodeId) {
-        for (i, segment) in path.segments.iter().enumerate() {
+        for (i, ref segment) in path.segments.iter().enumerate() {
             let depth = path.segments.len() - i - 1;
             if let Some(ref args) = segment.args {
-                self.visit_segment_args(path.def, depth, args);
+                self.visit_segment_args(path.def, depth, segment.ident, args);
             }
         }
     }
@@ -1667,6 +1667,7 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         &mut self,
         def: Def,
         depth: usize,
+        segment_ident: ast::Ident,
         generic_args: &'tcx hir::GenericArgs,
     ) {
         if generic_args.parenthesized {
@@ -1687,9 +1688,12 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
                 Some(lt)
             }
             _ => None,
-        }).collect();
+        }).collect::<Vec<_>>();
         if elide_lifetimes {
-            self.resolve_elided_lifetimes(lifetimes, true);
+            self.lint_implicit_lifetimes_in_segment(
+                segment_ident, generic_args, &lifetimes
+            );
+            self.resolve_elided_lifetimes(lifetimes);
         } else {
             lifetimes.iter().for_each(|lt| self.visit_lifetime(lt));
         }
@@ -2066,9 +2070,73 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         }
     }
 
+    fn lint_implicit_lifetimes_in_segment(&mut self,
+                                          segment_ident: ast::Ident,
+                                          generic_args: &'tcx hir::GenericArgs,
+                                          lifetime_refs: &[&'tcx hir::Lifetime]) {
+        let num_implicit_lifetimes = lifetime_refs.iter()
+            .filter(|lt| lt.name.is_implicit()).count();
+        if num_implicit_lifetimes == 0 {
+            return;
+        }
+
+        let mut err = self.tcx.struct_span_lint_node(
+            lint::builtin::ELIDED_LIFETIMES_IN_PATHS,
+            lifetime_refs[0].id, // FIXME: HirIdify #50928
+            segment_ident.span,
+            &format!("implicit lifetime parameters in types are deprecated"),
+        );
+
+        if num_implicit_lifetimes == 1 {
+            let (replace_span,
+                 suggestion) = if generic_args.args.len() == num_implicit_lifetimes &&
+                generic_args.bindings.is_empty() {
+                    // If there are no (non-implicit) generic args or bindings, our
+                    // suggestion includes the angle brackets
+                    (segment_ident.span.shrink_to_hi(), "<'_>")
+                } else {
+                    // Otherwise—sorry, this is kind of gross—we need to infer the
+                    // replacement point span from the generics that do exist
+                    let mut first_generic_span = None;
+                    for ref arg in &generic_args.args {
+                        match arg {
+                            hir::GenericArg::Lifetime(lt) => {
+                                // Really, this branch shouldn't happen—you can't elide only
+                                // some lifetimes—but the responsibility for catching that
+                                // error lives elsewhere
+                                if !lt.name.is_implicit() {
+                                    first_generic_span = Some(lt.span);
+                                    break;
+                                }
+                            },
+                            hir::GenericArg::Type(ty) => {
+                                first_generic_span = Some(ty.span);
+                                break;
+                            }
+                        }
+                    }
+                    if let None = first_generic_span {
+                        for ref binding in &generic_args.bindings {
+                            first_generic_span = Some(binding.span);
+                            break;
+                        }
+                    }
+                    let replace_span = first_generic_span
+                        .expect("checked earlier that non-implicit args or bindings exist");
+                    (replace_span.shrink_to_lo(), "'_, ")
+                };
+            err.span_suggestion_with_applicability(
+                replace_span,
+                "indicate the anonymous lifetime",
+                suggestion.to_owned(),
+                Applicability::MachineApplicable
+            );
+        }
+        err.emit();
+    }
+
     fn resolve_elided_lifetimes(&mut self,
-                                lifetime_refs: Vec<&'tcx hir::Lifetime>,
-                                deprecate_implicit: bool) {
+                                lifetime_refs: Vec<&'tcx hir::Lifetime>) {
         if lifetime_refs.is_empty() {
             return;
         }
@@ -2076,17 +2144,6 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         let span = lifetime_refs[0].span;
         let mut late_depth = 0;
         let mut scope = self.scope;
-        if deprecate_implicit && lifetime_refs[0].name.is_implicit() {
-            let mut err = self.tcx.struct_span_lint_node(
-                lint::builtin::ELIDED_LIFETIMES_IN_PATHS,
-                lifetime_refs[0].id, // FIXME: HirIdify #50928
-                span,
-                &format!("implicit lifetime parameters in types are deprecated"),
-            );
-            // FIXME: suggest `'_` (need to take into account whether angle-bracketed
-            // params already exist)
-            err.emit();
-        }
         let error = loop {
             match *scope {
                 // Do not assign any resolution, it will be inferred.
