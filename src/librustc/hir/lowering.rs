@@ -1753,6 +1753,8 @@ impl<'a> LoweringContext<'a> {
             _ => false,
         });
         if !generic_args.parenthesized && !has_lifetimes {
+
+
             generic_args.args =
                 self.elided_path_lifetimes(path_span, expected_lifetimes)
                     .into_iter()

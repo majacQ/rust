@@ -1,14 +1,33 @@
-error: implicit lifetime parameters in types are deprecated
-  --> $DIR/elided-lifetimes.rs:16:12
+warning: implicit lifetime parameters in types are deprecated
+  --> $DIR/elided-lifetimes.rs:22:12
    |
 LL | fn foo(x: &Foo) {
-   |            ^^^
+   |            ^^^- help: indicate the anonymous lifetimes: `<'_>`
    |
 note: lint level defined here
-  --> $DIR/elided-lifetimes.rs:12:9
+  --> $DIR/elided-lifetimes.rs:14:9
    |
-LL | #![deny(elided_lifetimes_in_paths)]
+LL | #![warn(elided_lifetimes_in_paths)]
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: implicit lifetime parameters in types are deprecated
+  --> $DIR/elided-lifetimes.rs:32:47
+   |
+LL | fn make_paired(one: &str, the_other: &str) -> Paired {
+   |                                               ^^^^^^- help: indicate the anonymous lifetimes: `<'_, '_>`
+
+error[E0106]: missing lifetime specifiers
+  --> $DIR/elided-lifetimes.rs:32:47
+   |
+LL | fn make_paired(one: &str, the_other: &str) -> Paired {
+   |                                               ^^^^^^ expected 2 lifetime parameters
+
+warning: implicit lifetime parameters in types are deprecated
+  --> $DIR/elided-lifetimes.rs:43:18
+   |
+LL |     let loyalty: Ref<(u32, char)> = honesty.borrow();
+   |                  ^^^ - help: indicate the anonymous lifetimes: `'_,`
 
 error: aborting due to previous error
 
+For more information about this error, try `rustc --explain E0106`.

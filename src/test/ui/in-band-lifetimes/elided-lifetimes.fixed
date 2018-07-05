@@ -9,6 +9,7 @@
 // except according to those terms.
 
 // run-rustfix
+// compile-flags: --edition 2018
 
 #![allow(unused)]
 #![warn(elided_lifetimes_in_paths)]
@@ -19,7 +20,7 @@ use std::cell::{RefCell, Ref};
 
 struct Foo<'a> { x: &'a u32 }
 
-fn foo(x: &Foo) {
+fn foo(x: &Foo<'_>) {
     //~^ WARN implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetimes
 }
@@ -27,10 +28,12 @@ fn foo(x: &Foo) {
 fn bar(x: &Foo<'_>) {}
 
 
-struct WrappedGift<'a>(&'a str, &'b str);
+struct Paired<'a, 'b>(&'a str, &'b str);
 
-fn make_paired(one: &str, the_other: &str) -> Paired {
-    //~^ WARN implicit lifetime parameters in types are deprecated
+fn make_paired(one: &str, the_other: &str) -> Paired<'_, '_> {
+    //~^ ERROR missing lifetime specifiers
+    //~| NOTE expected 2 lifetime parameters
+    //~| WARN implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetimes
     Paired(one, the_other)
 }
@@ -38,7 +41,7 @@ fn make_paired(one: &str, the_other: &str) -> Paired {
 
 fn main() {
     let honesty = RefCell::new((4, 'e'));
-    let loyalty: Ref<(u32, char)> = honesty.borrow();
+    let loyalty: Ref<'_,(u32, char)> = honesty.borrow();
     //~^ WARN implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetimes
 }
