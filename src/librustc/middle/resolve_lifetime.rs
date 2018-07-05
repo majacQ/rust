@@ -2129,7 +2129,8 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
                 replace_span,
                 "indicate the anonymous lifetime",
                 suggestion.to_owned(),
-                Applicability::MachineApplicable
+                // false positives observed with macros, `Ref::map` (tracking issue #52041)
+                Applicability::MaybeIncorrect
             );
         }
         err.emit();

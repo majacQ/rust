@@ -44,8 +44,9 @@ extern crate syntax_pos;
 
 use rustc::lint;
 use rustc::lint::{LateContext, LateLintPass, LintPass, LintArray};
-use rustc::lint::builtin::{BARE_TRAIT_OBJECTS, ABSOLUTE_PATHS_NOT_STARTING_WITH_CRATE};
-use rustc::lint::builtin::MACRO_USE_EXTERN_CRATE;
+use rustc::lint::builtin::{BARE_TRAIT_OBJECTS, ABSOLUTE_PATHS_NOT_STARTING_WITH_CRATE,
+                           ELIDED_LIFETIMES_IN_PATHS, MACRO_USE_EXTERN_CRATE};
+
 use rustc::session;
 use rustc::util;
 use rustc::hir;
@@ -183,6 +184,7 @@ pub fn register_builtins(store: &mut lint::LintStore, sess: Option<&Session>) {
                     UNREACHABLE_PUB,
                     UNUSED_EXTERN_CRATES,
                     MACRO_USE_EXTERN_CRATE,
+                    ELIDED_LIFETIMES_IN_PATHS,
                     ELLIPSIS_INCLUSIVE_RANGE_PATTERNS);
 
     // Guidelines for creating a future incompatibility lint:
