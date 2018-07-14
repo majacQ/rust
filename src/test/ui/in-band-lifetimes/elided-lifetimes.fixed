@@ -51,4 +51,5 @@ fn main() {
     let loyalty: Ref<'_, (u32, char)> = honesty.borrow();
     //~^ ERROR implicit lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
+    let generosity = Ref::map(loyalty, |t| &t.0);
 }

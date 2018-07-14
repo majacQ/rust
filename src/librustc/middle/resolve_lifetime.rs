@@ -564,6 +564,20 @@ impl<'a, 'tcx> Visitor<'tcx> for LifetimeContext<'a, 'tcx> {
         }
     }
 
+    fn visit_expr(&mut self, expr: &'tcx hir::Expr) {
+        if let hir::ExprCall(_, ref arguments) = expr.node {
+            // Avoid traversing into a call expression's callee specifically to avoid
+            // triggering a false positive for the invisible-lifetimes-in-type-paths lint. (The
+            // motivating examples were `Ref::map` and `Ref::clone`.)
+            // FIXME: is there a more elegant way of doing this?!
+            //
+            // But do visit the arguments
+            walk_list!(self, visit_expr, arguments);
+        } else {
+            intravisit::walk_expr(self, expr);
+        }
+    }
+
     fn visit_ty(&mut self, ty: &'tcx hir::Ty) {
         debug!("visit_ty: id={:?} ty={:?}", ty.id, ty);
         match ty.node {
@@ -2136,9 +2150,8 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
             err.span_suggestion_with_applicability(
                 replace_span,
                 "indicate the anonymous lifetime",
-                suggestion.to_owned(),
-                // false positives observed with macros, `Ref::map` (tracking issue #52041)
-                Applicability::MaybeIncorrect
+                suggestion,
+                Applicability::MachineApplicable
             );
         }
         err.emit();
