@@ -11,16 +11,24 @@ LL | #![deny(elided_lifetimes_in_paths)]
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: implicit lifetime parameters in types are deprecated
-  --> $DIR/elided-lifetimes.rs:33:29
+  --> $DIR/elided-lifetimes.rs:37:29
    |
 LL | fn wrap_gift(gift: &str) -> Wrapped {
    |                             ^^^^^^^- help: indicate the anonymous lifetime: `<'_>`
 
 error: implicit lifetime parameters in types are deprecated
-  --> $DIR/elided-lifetimes.rs:42:18
+  --> $DIR/elided-lifetimes.rs:43:38
+   |
+LL | fn wrap_gift_with_bow(gift: &str) -> WrappedWithBow {
+   |                                      ^^^^^^^^^^^^^^- help: indicate the anonymous lifetime: `<'_>`
+
+error: implicit lifetime parameters in types are deprecated
+  --> $DIR/elided-lifetimes.rs:51:18
    |
 LL |     let loyalty: Ref<(u32, char)> = honesty.borrow();
-   |                  ^^^ - help: indicate the anonymous lifetime: `'_,`
+   |                  ^^^^-^^^^^^^^^^^
+   |                      |
+   |                      help: indicate the anonymous lifetime: `'_,`
 
-error: aborting due to 3 previous errors
+error: aborting due to 4 previous errors
 

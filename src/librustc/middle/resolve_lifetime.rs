@@ -626,6 +626,10 @@ impl<'a, 'tcx> Visitor<'tcx> for LifetimeContext<'a, 'tcx> {
                 self.with(scope, |_, this| this.visit_ty(&mt.ty));
             }
             hir::TyPath(hir::QPath::Resolved(None, ref path)) => {
+                let segment = &path.segments[path.segments.len()-1];
+                if let Some(ref args) = segment.args {
+                    self.lint_implicit_lifetimes_in_typath(path, args);
+                }
                 if let Def::Existential(exist_ty_did) = path.def {
                     assert!(exist_ty_did.is_local());
                     // Resolve the lifetimes that are applied to the existential type.
@@ -869,7 +873,7 @@ impl<'a, 'tcx> Visitor<'tcx> for LifetimeContext<'a, 'tcx> {
         for (i, ref segment) in path.segments.iter().enumerate() {
             let depth = path.segments.len() - i - 1;
             if let Some(ref args) = segment.args {
-                self.visit_segment_args(path.def, depth, segment.ident, args);
+                self.visit_segment_args(path.def, depth, args);
             }
         }
     }
@@ -1667,7 +1671,6 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         &mut self,
         def: Def,
         depth: usize,
-        segment_ident: ast::Ident,
         generic_args: &'tcx hir::GenericArgs,
     ) {
         if generic_args.parenthesized {
@@ -1690,9 +1693,6 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
             _ => None,
         }).collect::<Vec<_>>();
         if elide_lifetimes {
-            self.lint_implicit_lifetimes_in_segment(
-                segment_ident, generic_args, &lifetimes
-            );
             self.resolve_elided_lifetimes(lifetimes);
         } else {
             lifetimes.iter().for_each(|lt| self.visit_lifetime(lt));
@@ -2070,30 +2070,38 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         }
     }
 
-    fn lint_implicit_lifetimes_in_segment(&mut self,
-                                          segment_ident: ast::Ident,
-                                          generic_args: &'tcx hir::GenericArgs,
-                                          lifetime_refs: &[&'tcx hir::Lifetime]) {
-        let num_implicit_lifetimes = lifetime_refs.iter()
-            .filter(|lt| lt.name.is_implicit()).count();
-        if num_implicit_lifetimes == 0 {
+    fn lint_implicit_lifetimes_in_typath(&mut self,
+                                         path: &hir::Path,
+                                         generic_args: &'tcx hir::GenericArgs) {
+        let implicit_lifetimes = generic_args.args.iter()
+            .filter_map(|arg| {
+                if let hir::GenericArg::Lifetime(lt) = arg {
+                    if lt.name.is_implicit() {
+                        return Some(lt)
+                    }
+                }
+                None
+            }).collect::<Vec<_>>();
+
+        if implicit_lifetimes.len() == 0 {
             return;
         }
 
         let mut err = self.tcx.struct_span_lint_node(
             lint::builtin::ELIDED_LIFETIMES_IN_PATHS,
-            lifetime_refs[0].id, // FIXME: HirIdify #50928
-            segment_ident.span,
+            implicit_lifetimes[0].id, // FIXME: HirIdify #50928
+            path.span,
             &format!("implicit lifetime parameters in types are deprecated"),
         );
 
-        if num_implicit_lifetimes == 1 {
+        if implicit_lifetimes.len() == 1 {
+            let segment_span = &path.segments[path.segments.len()-1].ident.span;
             let (replace_span,
-                 suggestion) = if generic_args.args.len() == num_implicit_lifetimes &&
+                 suggestion) = if generic_args.args.len() == implicit_lifetimes.len() &&
                 generic_args.bindings.is_empty() {
                     // If there are no (non-implicit) generic args or bindings, our
                     // suggestion includes the angle brackets
-                    (segment_ident.span.shrink_to_hi(), "<'_>")
+                    (segment_span.shrink_to_hi(), "<'_>")
                 } else {
                     // Otherwise—sorry, this is kind of gross—we need to infer the
                     // replacement point span from the generics that do exist
