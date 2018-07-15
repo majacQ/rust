@@ -2102,10 +2102,10 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         }
 
         let mut err = self.tcx.struct_span_lint_node(
-            lint::builtin::ELIDED_LIFETIMES_IN_PATHS,
+            lint::builtin::HIDDEN_LIFETIMES_IN_TYPES,
             implicit_lifetimes[0].id, // FIXME: HirIdify #50928
             path.span,
-            &format!("implicit lifetime parameters in types are deprecated"),
+            &format!("hidden lifetime parameters in types are deprecated"),
         );
 
         if implicit_lifetimes.len() == 1 {

@@ -250,9 +250,9 @@ declare_lint! {
 }
 
 declare_lint! {
-    pub ELIDED_LIFETIMES_IN_PATHS,
+    pub HIDDEN_LIFETIMES_IN_TYPES,
     Allow,
-    "implicit lifetime parameters are deprecated"
+    "hidden lifetime parameters in types are deprecated"
 }
 
 declare_lint! {
@@ -376,7 +376,7 @@ impl LintPass for HardwiredLints {
             UNUSED_LIFETIMES,
             UNUSED_LABELS,
             TYVAR_BEHIND_RAW_POINTER,
-            ELIDED_LIFETIMES_IN_PATHS,
+            HIDDEN_LIFETIMES_IN_TYPES,
             BARE_TRAIT_OBJECTS,
             ABSOLUTE_PATHS_NOT_STARTING_WITH_CRATE,
             UNSTABLE_NAME_COLLISIONS,

@@ -45,7 +45,7 @@ extern crate syntax_pos;
 use rustc::lint;
 use rustc::lint::{LateContext, LateLintPass, LintPass, LintArray};
 use rustc::lint::builtin::{BARE_TRAIT_OBJECTS, ABSOLUTE_PATHS_NOT_STARTING_WITH_CRATE,
-                           ELIDED_LIFETIMES_IN_PATHS, MACRO_USE_EXTERN_CRATE};
+                           HIDDEN_LIFETIMES_IN_TYPES, MACRO_USE_EXTERN_CRATE};
 
 use rustc::session;
 use rustc::util;
@@ -184,7 +184,7 @@ pub fn register_builtins(store: &mut lint::LintStore, sess: Option<&Session>) {
                     UNREACHABLE_PUB,
                     UNUSED_EXTERN_CRATES,
                     MACRO_USE_EXTERN_CRATE,
-                    ELIDED_LIFETIMES_IN_PATHS,
+                    HIDDEN_LIFETIMES_IN_TYPES,
                     ELLIPSIS_INCLUSIVE_RANGE_PATTERNS);
 
     // Guidelines for creating a future incompatibility lint:
@@ -308,11 +308,14 @@ pub fn register_builtins(store: &mut lint::LintStore, sess: Option<&Session>) {
 
     // Register renamed and removed lints
     store.register_renamed("single_use_lifetime", "single_use_lifetimes");
-    store.register_renamed("elided_lifetime_in_path", "elided_lifetimes_in_paths");
     store.register_renamed("bare_trait_object", "bare_trait_objects");
     store.register_renamed("unstable_name_collision", "unstable_name_collisions");
     store.register_renamed("unused_doc_comment", "unused_doc_comments");
     store.register_renamed("unknown_features", "unused_features");
+    // Yes, it got renamed twice :'(
+    store.register_renamed("elided_lifetime_in_path", "hidden_lifetimes_in_types");
+    store.register_renamed("elided_lifetimes_in_paths", "hidden_lifetimes_in_types");
+
     store.register_removed("unsigned_negation", "replaced by negate_unsigned feature gate");
     store.register_removed("negate_unsigned", "cast a signed value instead");
     store.register_removed("raw_pointer_derive", "using derive with raw pointers is ok");

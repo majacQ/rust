@@ -12,7 +12,7 @@
 // compile-flags: --edition 2018
 
 #![allow(unused)]
-#![deny(elided_lifetimes_in_paths)]
+#![deny(hidden_lifetimes_in_types)]
 //~^ NOTE lint level defined here
 
 use std::cell::{RefCell, Ref};
@@ -20,8 +20,8 @@ use std::cell::{RefCell, Ref};
 
 struct Foo<'a> { x: &'a u32 }
 
-fn foo(x: &Foo<'_>) {
-    //~^ ERROR implicit lifetime parameters in types are deprecated
+fn foo(x: &Foo) {
+    //~^ ERROR hidden lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
 }
 
@@ -34,14 +34,14 @@ struct WrappedWithBow<'a> {
     gift: &'a str
 }
 
-fn wrap_gift(gift: &str) -> Wrapped<'_> {
-    //~^ ERROR implicit lifetime parameters in types are deprecated
+fn wrap_gift(gift: &str) -> Wrapped {
+    //~^ ERROR hidden lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
     Wrapped(gift)
 }
 
-fn wrap_gift_with_bow(gift: &str) -> WrappedWithBow<'_> {
-    //~^ ERROR implicit lifetime parameters in types are deprecated
+fn wrap_gift_with_bow(gift: &str) -> WrappedWithBow {
+    //~^ ERROR hidden lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
     WrappedWithBow { gift }
 }
@@ -52,8 +52,8 @@ macro_rules! autowrapper {
             gift: &$lt str
         }
 
-        fn $fn_name(gift: &str) -> $type_name<'_> {
-            //~^ ERROR implicit lifetime parameters in types are deprecated
+        fn $fn_name(gift: &str) -> $type_name {
+            //~^ ERROR hidden lifetime parameters in types are deprecated
             //~| HELP indicate the anonymous lifetime
             $type_name { gift }
         }
@@ -66,16 +66,16 @@ autowrapper!(Autowrapped, autowrap_gift, 'a);
 
 macro_rules! anytuple_ref_ty {
     ($($types:ty),*) => {
-        Ref<'_, ($($types),*)>
-        //~^ ERROR implicit lifetime parameters in types are deprecated
+        Ref<($($types),*)>
+        //~^ ERROR hidden lifetime parameters in types are deprecated
         //~| HELP indicate the anonymous lifetime
     }
 }
 
 fn main() {
     let honesty = RefCell::new((4, 'e'));
-    let loyalty: Ref<'_, (u32, char)> = honesty.borrow();
-    //~^ ERROR implicit lifetime parameters in types are deprecated
+    let loyalty: Ref<(u32, char)> = honesty.borrow();
+    //~^ ERROR hidden lifetime parameters in types are deprecated
     //~| HELP indicate the anonymous lifetime
     let generosity = Ref::map(loyalty, |t| &t.0);
 
