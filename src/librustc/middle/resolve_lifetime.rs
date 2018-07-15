@@ -2109,16 +2109,15 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
         );
 
         if implicit_lifetimes.len() == 1 {
-            let segment_span = &path.segments[path.segments.len()-1].ident.span;
             let (replace_span,
                  suggestion) = if generic_args.args.len() == implicit_lifetimes.len() &&
                 generic_args.bindings.is_empty() {
                     // If there are no (non-implicit) generic args or bindings, our
                     // suggestion includes the angle brackets
-                    (segment_span.shrink_to_hi(), "<'_>")
+                    (path.span.shrink_to_hi(), "<'_>".to_owned())
                 } else {
                     // Otherwise—sorry, this is kind of gross—we need to infer the
-                    // replacement point span from the generics that do exist
+                    // place to splice in `'_, ` from the generics that do exist
                     let mut first_generic_span = None;
                     for ref arg in &generic_args.args {
                         match arg {
@@ -2143,9 +2142,18 @@ impl<'a, 'tcx> LifetimeContext<'a, 'tcx> {
                             break;
                         }
                     }
-                    let replace_span = first_generic_span
+                    let first_generic_span = first_generic_span
                         .expect("checked earlier that non-implicit args or bindings exist");
-                    (replace_span.shrink_to_lo(), "'_, ")
+                    // If our codemap can be trusted, construct the entire `Path<'_, T>` source
+                    // suggestion
+                    if let Ok(snippet) = self.tcx.sess.codemap().span_to_snippet(path.span) {
+                        let (before, after) = snippet.split_at(
+                            (first_generic_span.lo().0 - path.span.lo().0) as usize
+                        );
+                        (path.span, format!("{}{}{}", before, "'_, ", after))
+                    } else {
+                        (first_generic_span.shrink_to_lo(), "'_, ".to_owned())
+                    }
                 };
             err.span_suggestion_with_applicability(
                 replace_span,
