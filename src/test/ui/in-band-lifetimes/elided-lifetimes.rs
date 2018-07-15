@@ -46,6 +46,24 @@ fn wrap_gift_with_bow(gift: &str) -> WrappedWithBow {
     WrappedWithBow { gift }
 }
 
+macro_rules! autowrapper {
+    ($type_name:ident, $fn_name:ident, $lt:lifetime) => {
+        struct $type_name<$lt> {
+            gift: &$lt str
+        }
+
+        fn $fn_name(gift: &str) -> $type_name {
+            //~^ ERROR implicit lifetime parameters in types are deprecated
+            //~| HELP indicate the anonymous lifetime
+            $type_name { gift }
+        }
+    }
+}
+
+autowrapper!(Autowrapped, autowrap_gift, 'a);
+//~^ NOTE in this expansion of autowrapper!
+//~| NOTE in this expansion of autowrapper!
+
 fn main() {
     let honesty = RefCell::new((4, 'e'));
     let loyalty: Ref<(u32, char)> = honesty.borrow();

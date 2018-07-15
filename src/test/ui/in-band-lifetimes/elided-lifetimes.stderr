@@ -23,12 +23,19 @@ LL | fn wrap_gift_with_bow(gift: &str) -> WrappedWithBow {
    |                                      ^^^^^^^^^^^^^^- help: indicate the anonymous lifetime: `<'_>`
 
 error: implicit lifetime parameters in types are deprecated
-  --> $DIR/elided-lifetimes.rs:51:18
+  --> $DIR/elided-lifetimes.rs:69:18
    |
 LL |     let loyalty: Ref<(u32, char)> = honesty.borrow();
-   |                  ^^^^-^^^^^^^^^^^
-   |                      |
-   |                      help: indicate the anonymous lifetime: `'_,`
+   |                  ^^^^^^^^^^^^^^^^ help: indicate the anonymous lifetime: `Ref<'_, (u32, char)>`
 
-error: aborting due to 4 previous errors
+error: implicit lifetime parameters in types are deprecated
+  --> $DIR/elided-lifetimes.rs:55:36
+   |
+LL |         fn $fn_name(gift: &str) -> $type_name {
+   |                                    ^^^^^^^^^^- help: indicate the anonymous lifetime: `<'_>`
+...
+LL | autowrapper!(Autowrapped, autowrap_gift, 'a);
+   | --------------------------------------------- in this macro invocation
+
+error: aborting due to 5 previous errors
 
