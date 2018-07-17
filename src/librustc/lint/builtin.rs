@@ -400,6 +400,7 @@ pub enum BuiltinLintDiagnostics {
     AbsPathWithModule(Span),
     DuplicatedMacroExports(ast::Ident, Span, Span),
     ProcMacroDeriveResolutionFallback(Span),
+    ElidedLifetimesInPaths(usize, Span, bool, Span, String),
 }
 
 impl BuiltinLintDiagnostics {
@@ -439,6 +440,30 @@ impl BuiltinLintDiagnostics {
             BuiltinLintDiagnostics::ProcMacroDeriveResolutionFallback(span) => {
                 db.span_label(span, "names from parent modules are not \
                                      accessible without an explicit import");
+            }
+            BuiltinLintDiagnostics::ElidedLifetimesInPaths(
+                n, path_span, incl_angl_brckt, insertion_span, anon_lts
+            ) => {
+                let (replace_span, suggestion) = if incl_angl_brckt {
+                    (insertion_span, anon_lts)
+                } else {
+                    // If our codemap can be trusted, construct the entire `Path<'_, T>` source
+                    // suggestion
+                    if let Ok(snippet) = sess.codemap().span_to_snippet(path_span) {
+                        let (before, after) = snippet.split_at(
+                            (insertion_span.lo().0 - path_span.lo().0) as usize
+                        );
+                        (path_span, format!("{}{}{}", before, anon_lts, after))
+                    } else {
+                        (insertion_span, anon_lts)
+                    }
+                };
+                db.span_suggestion_with_applicability(
+                    replace_span,
+                    &format!("indicate the anonymous lifetime{}", if n >= 2 { "s" } else { "" }),
+                    suggestion,
+                    Applicability::MachineApplicable
+                );
             }
         }
     }
