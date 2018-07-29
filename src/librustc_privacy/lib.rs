@@ -16,6 +16,8 @@
 
 #![recursion_limit="256"]
 
+#[macro_use] extern crate log;
+
 #[macro_use] extern crate rustc;
 #[macro_use] extern crate syntax;
 extern crate rustc_typeck;
@@ -348,6 +350,7 @@ impl<'a, 'tcx> Visitor<'tcx> for EmbargoVisitor<'a, 'tcx> {
         if self.prev_level.is_some() {
             let def_id = self.tcx.hir.local_def_id(id);
             if let Some(exports) = self.tcx.module_exports(def_id) {
+                info!("ZMD exports in module {:?} are {:?}", m, exports);
                 for export in exports.iter() {
                     if let Some(node_id) = self.tcx.hir.as_local_node_id(export.def.def_id()) {
                         if export.vis == ty::Visibility::Public {

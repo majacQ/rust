@@ -1405,6 +1405,7 @@ impl UnreachablePub {
     fn perform_lint(&self, cx: &LateContext, what: &str, id: ast::NodeId,
                     vis: &hir::Visibility, span: Span, exportable: bool) {
         let mut applicability = Applicability::MachineApplicable;
+        info!("ZMD debug access levels map is {:?}", cx.access_levels.map);
         match vis.node {
             hir::VisibilityKind::Public if !cx.access_levels.is_reachable(id) => {
                 if span.ctxt().outer().expn_info().is_some() {
@@ -1436,6 +1437,7 @@ impl UnreachablePub {
 
 impl<'a, 'tcx> LateLintPass<'a, 'tcx> for UnreachablePub {
     fn check_item(&mut self, cx: &LateContext, item: &hir::Item) {
+        info!("ZMD checking item {:?} with id {:?}", item.node, item.id);
         self.perform_lint(cx, "item", item.id, &item.vis, item.span, true);
     }
 

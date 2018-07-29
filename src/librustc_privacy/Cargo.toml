@@ -9,6 +9,7 @@ path = "lib.rs"
 crate-type = ["dylib"]
 
 [dependencies]
+log = "0.4"
 rustc = { path = "../librustc" }
 rustc_typeck = { path = "../librustc_typeck" }
 syntax = { path = "../libsyntax" }
