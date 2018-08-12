@@ -332,6 +332,26 @@ impl Diagnostic {
         self
     }
 
+    pub fn multipart_suggestion_with_applicability(
+        &mut self,
+        msg: &str,
+        suggestion: Vec<(Span, String)>,
+        applicability: Applicability
+    ) -> &mut Self {
+        self.suggestions.push(CodeSuggestion {
+            substitutions: vec![Substitution {
+                parts: suggestion
+                    .into_iter()
+                    .map(|(span, snippet)| SubstitutionPart { snippet, span })
+                    .collect(),
+            }],
+            msg: msg.to_owned(),
+            show_code_when_inline: true,
+            applicability,
+        });
+        self
+    }
+
     pub fn span_suggestions_with_applicability(&mut self, sp: Span, msg: &str,
                                         suggestions: Vec<String>,
                                         applicability: Applicability) -> &mut Self {
