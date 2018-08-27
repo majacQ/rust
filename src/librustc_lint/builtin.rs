@@ -1962,7 +1962,38 @@ impl LintPass for ExplicitOutlivesRequirements {
 }
 
 impl ExplicitOutlivesRequirements {
-    fn collect_outlives_bound_spans(&self, bounds: &hir::GenericBounds, infer_static: bool) -> Vec<(usize, Span)> {
+    fn collect_outlives_bound_spans(
+        &self,
+        cx: &LateContext,
+        item_def_id: DefId,
+        param_name: &str,
+        bounds: &hir::GenericBounds,
+        infer_static: bool
+    ) -> Vec<(usize, Span)> {
+        let inferred_outlives = cx.tcx.inferred_outlives_of(item_def_id);
+        info!("ZMD inferred-outlives predicates {:?}", inferred_outlives);
+        let ty_lt_names = inferred_outlives.iter().filter_map(|pred| {
+            let binder = match pred {
+                ty::Predicate::TypeOutlives(binder) => binder,
+                _ => { return None; }
+            };
+            let ty_outlives_pred = binder.skip_binder();
+            let ty_name = match ty_outlives_pred.0.sty {
+                ty::Param(param) => param.name.as_str(),
+                _ => { return None; }
+            };
+            let lt_name = match ty_outlives_pred.1 {
+                ty::RegionKind::ReEarlyBound(region) => {
+                    region.name.as_str()
+                },
+                _ => { return None; }
+            };
+            Some((ty_name, lt_name))
+        }).collect::<Vec<_>>();
+
+        info!("ZMD processes inferred-outlives predicates {:?}", ty_lt_names);
+        // we know that these are going to be `ty::Predicate::RegionOutlives` or `ty::Predicate::TypeOutlives`; I think we actually only care about TypeOutlives
+
         let mut bound_spans = Vec::new();
         for (i, bound) in bounds.iter().enumerate() {
             if let hir::GenericBound::Outlives(lifetime) = bound {
@@ -1974,21 +2005,29 @@ impl ExplicitOutlivesRequirements {
                     // infer-outlives for 'static is still feature-gated (tracking issue #44493)
                     continue;
                 }
-                bound_spans.push((i, bound.span()));
+
+                let lt_name = lifetime.name.ident().as_str();
+                if ty_lt_names.contains((param_name, lt_name)) {
+                    bound_spans.push((i, bound.span()));
+                }
             }
         }
         bound_spans
     }
 
-    fn consolidate_outlives_bound_spans(&self, lo: Span, bounds: &hir::GenericBounds, bound_spans: Vec<(usize, Span)>) -> Vec<Span> {
+    fn consolidate_outlives_bound_spans(
+        &self,
+        lo: Span,
+        bounds: &hir::GenericBounds,
+        bound_spans: Vec<(usize, Span)>
+    ) -> Vec<Span> {
         if bounds.is_empty() {
             return Vec::new();
         }
         if bound_spans.len() == bounds.len() {
             let (_, last_bound_span) = bound_spans[bound_spans.len()-1];
-            // If all bounds are inferable (i.e., are outlives-bounds, like `T: 'a`), we
-            // want to delete the colon, so start from just after the parameter (span
-            // passed as argument)
+            // If all bounds are inferable, we want to delete the colon, so
+            // start from just after the parameter (span passed as argument)
             vec![lo.to(last_bound_span)]
         } else {
             let mut merged = Vec::new();
@@ -2036,12 +2075,24 @@ impl ExplicitOutlivesRequirements {
 impl<'a, 'tcx> LateLintPass<'a, 'tcx> for ExplicitOutlivesRequirements {
     fn check_item(&mut self, cx: &LateContext<'a, 'tcx>, item: &'tcx hir::Item) {
         let infer_static = cx.tcx.features().infer_static_outlives_requirements;
+        let def_id = cx.tcx.hir.local_def_id(item.id);
         if let hir::ItemKind::Struct(_, ref generics) = item.node {
             let mut bound_count = 0;
             let mut lint_spans = Vec::new();
 
             for param in &generics.params {
-                let bound_spans = self.collect_outlives_bound_spans(&param.bounds, infer_static);
+                let param_name = match param.kind {
+                    hir::GenericParamKind::Lifetime { .. } => { continue; },
+                    hir::GenericParamKind::Type { .. } => {
+                        match param.name {
+                            hir::ParamName::Fresh(_) => { continue; },
+                            hir::ParamName::Plain(name) => name.as_str()
+                        }
+                    }
+                };
+                let bound_spans = self.collect_outlives_bound_spans(
+                    cx, def_id, param_name, &param.bounds, infer_static
+                );
                 bound_count += bound_spans.len();
                 lint_spans.extend(
                     self.consolidate_outlives_bound_spans(
@@ -2055,8 +2106,14 @@ impl<'a, 'tcx> LateLintPass<'a, 'tcx> for ExplicitOutlivesRequirements {
             let num_predicates = generics.where_clause.predicates.len();
             for (i, where_predicate) in generics.where_clause.predicates.iter().enumerate() {
                 if let hir::WherePredicate::BoundPredicate(predicate) = where_predicate {
+                    let param_name = match predicate.bounded_ty.node {
+                        hir::TyKind::Path(qpath) => {
+                            // TODO FINISH WIP
+                        },
+                        _ => { continue; }
+                    };
                     let bound_spans = self.collect_outlives_bound_spans(
-                        &predicate.bounds, infer_static
+                        cx, def_id, param_name, &predicate.bounds, infer_static
                     );
                     bound_count += bound_spans.len();
 
