@@ -502,6 +502,9 @@ declare_features! (
 
     // Allows `const _: TYPE = VALUE`
     (active, underscore_const_names, "1.31.0", Some(54912), None),
+
+    // `reason = ` in lint attributes and `expect` lint attribute
+    (active, lint_reasons, "1.31.0", Some(54503), None),
 );
 
 declare_features! (
