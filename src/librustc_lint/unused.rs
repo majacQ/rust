@@ -280,15 +280,12 @@ impl UnusedParens {
     }
 
     fn check_unused_parens_pat(&self,
-                                cx: &EarlyContext,
-                                value: &ast::Pat,
-                                msg: &str,
-                                struct_lit_needs_parens: bool) {
+                               cx: &EarlyContext,
+                               value: &ast::Pat,
+                               msg: &str) {
         if let ast::PatKind::Paren(_) = value.node {
-            if !struct_lit_needs_parens {
-                let pattern = pprust::pat_to_string(value);
-                Self::remove_outer_parens(cx, value.span, &pattern, msg)
-            }
+            let pattern = pprust::pat_to_string(value);
+            Self::remove_outer_parens(cx, value.span, &pattern, msg)
         }
     }
 
@@ -378,14 +375,18 @@ impl EarlyLintPass for UnusedParens {
 
     fn check_pat(&mut self, cx: &EarlyContext, p: &ast::Pat) {
         use ast::PatKind::*;
-        let (value, msg, struct_lit_needs_parens) = match p.node {
-            Ident(.., Some(ref pat)) => (pat, "optional subpattern", false),
-            Ref(ref pat, _) => (pat, "reference pattern", false),
-            Slice(_, Some(ref pat), _) => (pat, "optional position pattern", false),
-            Paren(_) => (p, "pattern", false),
-            _ => return,
-        };
-        self.check_unused_parens_pat(cx, &value, msg, struct_lit_needs_parens);
+        if let Paren(_) = p.node {
+            self.check_unused_parens_pat(cx, p, "pattern");
+        } else {
+            // separate match to smooth over P<Pat> vs. Pat typeck infelicities
+            let (value, msg) = match p.node {
+                Ident(.., Some(ref pat)) => (pat, "optional subpattern"),
+                Ref(ref pat, _) => (pat, "reference pattern"),
+                Slice(_, Some(ref pat), _) => (pat, "optional position pattern"),
+                _ => { return; }
+            };
+            self.check_unused_parens_pat(cx, &value, msg);
+        }
     }
 
     fn check_stmt(&mut self, cx: &EarlyContext, s: &ast::Stmt) {
