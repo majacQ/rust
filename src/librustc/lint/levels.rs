@@ -24,6 +24,7 @@ use syntax::attr;
 use syntax::feature_gate;
 use syntax::source_map::MultiSpan;
 use syntax::symbol::Symbol;
+use syntax_pos::Span;
 use util::nodemap::FxHashMap;
 
 pub struct LintLevelSets {
@@ -196,12 +197,22 @@ impl<'a> LintLevelsBuilder<'a> {
     ///
     /// Don't forget to call `pop`!
     pub fn push(&mut self, attrs: &[ast::Attribute]) -> BuilderPush {
+        info!("ZMD B push called with {:?}", attrs);
         let mut specs = FxHashMap();
         let store = self.sess.lint_store.borrow();
         let sess = self.sess;
         let bad_attr = |span| {
             struct_span_err!(sess, span, E0452, "malformed lint attribute")
         };
+        let empty_attr = |span: Span, specs| {
+            let lint = builtin::UNUSED_ATTRIBUTES;
+            let (level, src) = self.sets.get_lint_level(lint, self.cur, Some(&specs), &sess);
+            let sp = Some(span.into());
+            let msg = "empty lint attribute is unused";
+            info!("ZMD C empty-attr being called on {:?} {:?} {:?}", level, src, sp);
+            lint::struct_lint_level(sess, lint, level, src, sp, msg)
+        };
+
         for attr in attrs {
             let level = match Level::from_str(&attr.name().as_str()) {
                 None => continue,
@@ -216,8 +227,14 @@ impl<'a> LintLevelsBuilder<'a> {
             } else {
                 let mut err = bad_attr(meta.span);
                 err.emit();
-                continue
+                continue;
             };
+
+            if metas.is_empty() {
+                let mut err = empty_attr(attr.span, specs.clone());
+                err.emit();
+                continue;
+            }
 
             // Before processing the lint names, look for a reason (RFC 2383)
             // at the end.
@@ -231,6 +248,13 @@ impl<'a> LintLevelsBuilder<'a> {
                         if item.ident == "reason" {
                             // found reason, reslice meta list to exclude it
                             metas = &metas[0..metas.len()-1];
+                            // ... but also notice if we thereby don't have any lint names
+                            // left (attribute was `#[level(reason = "foo")]`)
+                            if metas.is_empty() {
+                                let mut err = empty_attr(attr.span, specs.clone());
+                                err.emit();
+                                continue;
+                            }
                             if let ast::LitKind::Str(rationale, _) = name_value.node {
                                 if gate_reasons {
                                     feature_gate::emit_feature_err(

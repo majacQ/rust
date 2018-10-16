@@ -707,6 +707,7 @@ impl<'a> LintContext<'a> for EarlyContext<'a> {
                           f: F)
         where F: FnOnce(&mut Self)
     {
+        info!("ZMD A with_lint_attrs {:?} ", attrs.iter().map(|a| (a.id, a.path.clone())).collect::<Vec<_>>());
         let push = self.builder.push(attrs);
         self.check_id(id);
         self.enter_attrs(attrs);

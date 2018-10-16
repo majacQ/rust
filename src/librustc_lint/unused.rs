@@ -10,10 +10,13 @@
 
 use rustc::hir::def::Def;
 use rustc::hir::def_id::DefId;
+
 use rustc::ty;
 use rustc::ty::adjustment;
-use lint::{LateContext, EarlyContext, LintContext, LintArray};
-use lint::{LintPass, EarlyLintPass, LateLintPass};
+use lint::{
+    LateContext, EarlyContext, LintContext, LintArray, LintPass, EarlyLintPass, LateLintPass,
+    builtin::UNUSED_ATTRIBUTES
+};
 
 use syntax::ast;
 use syntax::attr;
@@ -193,12 +196,6 @@ impl<'a, 'tcx> LateLintPass<'a, 'tcx> for PathStatements {
             }
         }
     }
-}
-
-declare_lint! {
-    pub UNUSED_ATTRIBUTES,
-    Warn,
-    "detects attributes that were not used by the compiler"
 }
 
 #[derive(Copy, Clone)]
