@@ -98,11 +98,8 @@ impl<'a, 'tcx> Visitor<'tcx> for MatchVisitor<'a, 'tcx> {
     fn visit_expr(&mut self, ex: &'tcx hir::Expr) {
         intravisit::walk_expr(self, ex);
 
-        match ex.node {
-            hir::ExprKind::Match(ref scrut, ref arms, source) => {
-                self.check_match(scrut, arms, source);
-            }
-            _ => {}
+        if let hir::ExprKind::Match(ref scrut, ref arms, source) = ex.node {
+            self.check_match(scrut, arms, source, ex.span);
         }
     }
 
@@ -173,7 +170,8 @@ impl<'a, 'tcx> MatchVisitor<'a, 'tcx> {
         &self,
         scrut: &hir::Expr,
         arms: &'tcx [hir::Arm],
-        source: hir::MatchSource)
+        source: hir::MatchSource,
+        span: Span)
     {
         for arm in arms {
             // First, check legality of move bindings.
@@ -238,11 +236,11 @@ impl<'a, 'tcx> MatchVisitor<'a, 'tcx> {
                 };
                 if !scrutinee_is_uninhabited {
                     // We know the type is inhabited, so this must be wrong
-                    let mut err = create_e0004(self.tcx.sess, scrut.span,
+                    let mut err = create_e0004(self.tcx.sess, span,
                                                format!("non-exhaustive patterns: type `{}` \
                                                         is non-empty",
                                                        pat_ty));
-                    span_help!(&mut err, scrut.span,
+                    span_help!(&mut err, span,
                                "ensure that all possible cases are being handled, \
                                 possibly by adding wildcards or more match arms");
                     err.emit();
@@ -258,7 +256,7 @@ impl<'a, 'tcx> MatchVisitor<'a, 'tcx> {
                 .map(|pat| smallvec![pat.0])
                 .collect();
             let scrut_ty = self.tables.node_id_to_type(scrut.hir_id);
-            check_exhaustive(cx, scrut_ty, scrut.span, &matrix);
+            check_exhaustive(cx, scrut_ty, span, &matrix);
         })
     }
 
