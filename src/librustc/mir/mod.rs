@@ -2676,22 +2676,38 @@ pub fn fmt_const_val(f: &mut impl Write, const_val: ty::Const<'_>) -> fmt::Resul
     let ty = const_val.ty;
     // print some primitives
     if let ConstValue::Scalar(Scalar::Bits { bits, .. }) = value {
+        let bit_width = ty::tls::with(|tcx| {
+            let ty = tcx.lift_to_global(&ty).unwrap();
+            tcx.layout_of(ty::ParamEnv::empty().and(ty))
+                .unwrap()
+                .size
+                .bits()
+        });
         match ty.sty {
             Bool if bits == 0 => return write!(f, "false"),
             Bool if bits == 1 => return write!(f, "true"),
             Float(ast::FloatTy::F32) => return write!(f, "{}f32", Single::from_bits(bits)),
             Float(ast::FloatTy::F64) => return write!(f, "{}f64", Double::from_bits(bits)),
-            Uint(ui) => return write!(f, "{:?}{}", bits, ui),
+            Uint(ui) => {
+                return match bits {
+                    // writing `0` as `uX::MIN` wouldn't clarify the value, so only `MAX` is
+                    // special-cased
+                    _ if bits == !0u128 >> (128 - bit_width) => write!(f, "::std::{}::MAX", ui),
+                    _ => write!(f, "{:?}{}", bits, ui)
+                }
+            }
             Int(i) => {
-                let bit_width = ty::tls::with(|tcx| {
-                    let ty = tcx.lift_to_global(&ty).unwrap();
-                    tcx.layout_of(ty::ParamEnv::empty().and(ty))
-                        .unwrap()
-                        .size
-                        .bits()
-                });
                 let shift = 128 - bit_width;
-                return write!(f, "{:?}{}", ((bits as i128) << shift) >> shift, i);
+                let n = ((bits as i128) << shift) >> shift;
+                return match n {
+                    _ if n == (1u128 << (bit_width - 1)) as i128 => {
+                        write!(f, "::std::{}::MIN", i)
+                    },
+                    _ if n == ((1u128 << (bit_width - 1)) - 1) as i128 => {
+                        write!(f, "::std::{}::MAX", i)
+                    },
+                    _ => write!(f, "{:?}{}", n, i)
+                }
             }
             Char => return write!(f, "{:?}", ::std::char::from_u32(bits as u32).unwrap()),
             _ => {}
