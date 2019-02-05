@@ -84,7 +84,7 @@ impl Emitter for JsonEmitter {
 
 // The following data types are provided just for serialisation.
 
-#[derive(RustcEncodable)]
+#[derive(RustcEncodable, PartialEq, Debug)]
 struct Diagnostic {
     /// The primary error message.
     message: String,
@@ -98,7 +98,7 @@ struct Diagnostic {
     rendered: Option<String>,
 }
 
-#[derive(RustcEncodable)]
+#[derive(RustcEncodable, PartialEq, Debug)]
 #[allow(unused_attributes)]
 struct DiagnosticSpan {
     file_name: String,
@@ -126,7 +126,7 @@ struct DiagnosticSpan {
     expansion: Option<Box<DiagnosticSpanMacroExpansion>>,
 }
 
-#[derive(RustcEncodable)]
+#[derive(RustcEncodable, PartialEq, Debug)]
 struct DiagnosticSpanLine {
     text: String,
 
@@ -136,7 +136,7 @@ struct DiagnosticSpanLine {
     highlight_end: usize,
 }
 
-#[derive(RustcEncodable)]
+#[derive(RustcEncodable, PartialEq, Debug)]
 struct DiagnosticSpanMacroExpansion {
     /// span where macro was applied to generate this code; note that
     /// this may itself derive from a macro (if
@@ -150,7 +150,7 @@ struct DiagnosticSpanMacroExpansion {
     def_site_span: Option<DiagnosticSpan>,
 }
 
-#[derive(RustcEncodable)]
+#[derive(RustcEncodable, PartialEq, Debug)]
 struct DiagnosticCode {
     /// The code itself.
     code: String,
@@ -380,4 +380,75 @@ impl DiagnosticCode {
             }
         })
     }
+}
+
+
+
+#[cfg(test)]
+mod tests {
+    use super::{JsonEmitter, Diagnostic};
+    use std::path::PathBuf;
+    use source_map::{SourceMap, FilePathMapping};
+    use rustc_data_structures::sync::{Lrc};
+    use errors::{Applicability, DiagnosticBuilder, Handler, Level};
+    use syntax_pos::{Span, BytePos, NO_EXPANSION};
+
+    #[test]
+    fn demonstrate_failure() {
+        assert!(true);
+    }
+
+    fn dummy_source_map() -> SourceMap {
+        let source_map = SourceMap::new(FilePathMapping::empty());
+        source_map.new_source_file(
+            PathBuf::from("sample.rs").into(),
+            "first line\nsecond line".to_string()
+        );
+        source_map
+    }
+
+    fn dummy_json_emitter() -> JsonEmitter {
+        let buf: Vec<u8> = Vec::new();
+        // silently emit to our buffer instead of stderr
+        JsonEmitter::new(
+            Box::new(buf),
+            None,
+            Lrc::new(dummy_source_map()),
+            true,
+        )
+    }
+
+    #[test]
+    fn span_suggestions_json_format() {
+        let handler = Handler::with_emitter(true, false, Box::new(dummy_json_emitter()));
+        let mut err = DiagnosticBuilder::new(&handler, Level::Error, "sample top-line message");
+        let suggestions = vec!["1st", "erste"];
+        err.span_suggestions(
+            Span::new(BytePos(0), BytePos(5), NO_EXPANSION),
+            "sample help message",
+            suggestions.into_iter().map(|s| s.to_owned()),
+            Applicability::MachineApplicable
+        );
+
+        let expected = Diagnostic {
+            message: "sample top-line message".to_owned(),
+            code: None,
+            level: "error",
+            spans: vec![],
+            children: vec![],
+            rendered: None
+        };
+        let emitter = dummy_json_emitter();
+        let output = Diagnostic::from_diagnostic_builder(&err, &emitter);
+        assert_eq!(expected, output);
+
+        // unemitted errors panic on drop
+        err.emit();
+    }
+
+    // #[test]
+    // fn multipart_suggestion_json_format() {
+
+    // }
+
 }
