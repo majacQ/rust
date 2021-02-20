@@ -660,7 +660,7 @@ error[E0308]: mismatched types
   --> $DIR/disallowed-positions.rs:78:12
    |
 LL |     if let Range { start: F, end } = F..|| true {}
-   |            ^^^^^^^^^^^^^^^^^^^^^^^ expected fn pointer, found struct `std::ops::Range`
+   |            ^^^^^^^^^^^^^^^^^^^^^^^ expected functionr, found struct `std::ops::Range`
    |
    = note: expected fn pointer `fn() -> bool`
                   found struct `std::ops::Range<_>`
@@ -848,7 +848,7 @@ error[E0308]: mismatched types
   --> $DIR/disallowed-positions.rs:142:15
    |
 LL |     while let Range { start: F, end } = F..|| true {}
-   |               ^^^^^^^^^^^^^^^^^^^^^^^ expected fn pointer, found struct `std::ops::Range`
+   |               ^^^^^^^^^^^^^^^^^^^^^^^ expected functionr, found struct `std::ops::Range`
    |
    = note: expected fn pointer `fn() -> bool`
                   found struct `std::ops::Range<_>`

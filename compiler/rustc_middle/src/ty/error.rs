@@ -261,7 +261,7 @@ impl<'tcx> ty::TyS<'tcx> {
                 }
             }
             ty::FnDef(..) => "fn item".into(),
-            ty::FnPtr(_) => "fn pointer".into(),
+            ty::FnPtr(_) => "functionr".into(),
             ty::Dynamic(ref inner, ..) => {
                 if let Some(principal) = inner.principal() {
                     format!("trait object `dyn {}`", tcx.def_path_str(principal.def_id())).into()

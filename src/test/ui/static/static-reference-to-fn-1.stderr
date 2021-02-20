@@ -2,7 +2,7 @@ error[E0308]: mismatched types
   --> $DIR/static-reference-to-fn-1.rs:17:15
    |
 LL |         func: &foo,
-   |               ^^^^ expected fn pointer, found fn item
+   |               ^^^^ expected functionr, found fn item
    |
    = note: expected reference `&fn() -> Option<isize>`
               found reference `&fn() -> Option<isize> {foo}`

@@ -6,7 +6,7 @@ LL |       let _: fn(usize) -> usize = match true {
 LL | |         true => |a| a + 1,
    | |                 --------- this is found to be of type `fn(usize) -> usize`
 LL | |         false => |a| a - b,
-   | |                  ^^^^^^^^^ expected fn pointer, found closure
+   | |                  ^^^^^^^^^ expected functionr, found closure
 LL | |
 LL | |     };
    | |_____- `match` arms have incompatible types
