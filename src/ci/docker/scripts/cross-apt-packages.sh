@@ -1,3 +1,4 @@
+#!/bin/sh
 apt-get update && apt-get install -y --no-install-recommends \
   automake \
   bison \
@@ -17,10 +18,12 @@ apt-get update && apt-get install -y --no-install-recommends \
   libssl-dev \
   libtool-bin \
   make \
+  ninja-build \
   patch \
   pkg-config \
-  python2.7 \
+  python3 \
   sudo \
   texinfo \
+  unzip \
   wget \
   xz-utils

@@ -1,9 +1,12 @@
-#![feature(const_generics)]
-//~^ WARN the feature `const_generics` is incomplete and may cause the compiler to crash
+// run-pass
+// revisions: full min
+
+#![cfg_attr(full, feature(const_generics))]
+#![cfg_attr(full, allow(incomplete_features))]
 
 use std::fmt::Debug;
 
 #[derive(Debug)]
-struct S<T: Debug, const N: usize>([T; N]); //~ ERROR `[T; _]` doesn't implement `std::fmt::Debug`
+struct S<T: Debug, const N: usize>([T; N]);
 
 fn main() {}

@@ -3,12 +3,13 @@
 * text=auto eol=lf
 *.cpp rust
 *.h rust
-*.rs rust
+*.rs rust diff=rust
 *.fixed linguist-language=Rust
+*.mir linguist-language=Rust
 src/etc/installer/gfx/* binary
 *.woff binary
 src/vendor/** -text
-Cargo.lock -merge linguist-generated=false
+Cargo.lock linguist-generated=false
 
 # Older git versions try to fix line endings on images, this prevents it.
 *.png binary

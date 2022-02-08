@@ -1,3 +1,5 @@
+// ignore-tidy-linelength
+
 struct Point<T> {
     x: T,
     y: T,
@@ -16,42 +18,42 @@ fn main() {
     let pt = PointF {
         x: 1,
         //~^ ERROR mismatched types
-        //~| expected f32, found integer
+        //~| expected `f32`, found integer
         y: 2,
         //~^ ERROR mismatched types
-        //~| expected f32, found integer
+        //~| expected `f32`, found integer
     };
 
     let pt2 = Point::<f32> {
         x: 3,
         //~^ ERROR mismatched types
-        //~| expected f32, found integer
+        //~| expected `f32`, found integer
         y: 4,
         //~^ ERROR mismatched types
-        //~| expected f32, found integer
+        //~| expected `f32`, found integer
     };
 
     let pair = PairF {
         x: 5,
         //~^ ERROR mismatched types
-        //~| expected f32, found integer
+        //~| expected `f32`, found integer
         y: 6,
     };
 
     let pair2 = PairF::<i32> {
         x: 7,
         //~^ ERROR mismatched types
-        //~| expected f32, found integer
+        //~| expected `f32`, found integer
         y: 8,
     };
 
-    let pt3 = PointF::<i32> { //~ ERROR wrong number of type arguments
+    let pt3 = PointF::<i32> { //~ ERROR this type alias takes 0 type arguments but 1 type argument was supplied
         x: 9,  //~ ERROR mismatched types
         y: 10, //~ ERROR mismatched types
     };
 
     match (Point { x: 1, y: 2 }) {
-        PointF::<u32> { .. } => {} //~ ERROR wrong number of type arguments
+        PointF::<u32> { .. } => {} //~ ERROR this type alias takes 0 type arguments but 1 type argument was supplied
         //~^ ERROR mismatched types
     }
 

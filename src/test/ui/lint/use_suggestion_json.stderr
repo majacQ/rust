@@ -2,8 +2,7 @@
   "message": "cannot find type `Iter` in this scope",
   "code": {
     "code": "E0412",
-    "explanation": "
-The type name used is not in scope.
+    "explanation": "A used type name is not in scope.
 
 Erroneous code examples:
 
@@ -73,8 +72,8 @@ mod foo {
   "spans": [
     {
       "file_name": "$DIR/use_suggestion_json.rs",
-      "byte_start": 484,
-      "byte_end": 488,
+      "byte_start": 541,
+      "byte_end": 545,
       "line_start": 12,
       "line_end": 12,
       "column_start": 12,
@@ -95,14 +94,14 @@ mod foo {
   ],
   "children": [
     {
-      "message": "possible candidates are found in other modules, you can import them into scope",
+      "message": "consider importing one of these items",
       "code": null,
       "level": "help",
       "spans": [
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -124,8 +123,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -147,8 +146,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -170,8 +169,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -193,8 +192,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -216,8 +215,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -239,8 +238,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -262,8 +261,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -285,8 +284,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -308,8 +307,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -331,8 +330,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -354,8 +353,8 @@ mod foo {
         },
         {
           "file_name": "$DIR/use_suggestion_json.rs",
-          "byte_start": 461,
-          "byte_end": 461,
+          "byte_start": 518,
+          "byte_end": 518,
           "line_start": 11,
           "line_end": 11,
           "column_start": 1,
@@ -385,7 +384,8 @@ mod foo {
 \u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m|\u001b[0m
 \u001b[0m\u001b[1m\u001b[38;5;12mLL\u001b[0m\u001b[0m \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m| \u001b[0m\u001b[0m    let x: Iter;\u001b[0m
 \u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m| \u001b[0m\u001b[0m           \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;9m^^^^\u001b[0m\u001b[0m \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;9mnot found in this scope\u001b[0m
-\u001b[0m\u001b[1m\u001b[38;5;14mhelp\u001b[0m\u001b[0m: possible candidates are found in other modules, you can import them into scope\u001b[0m
+\u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m|\u001b[0m
+\u001b[0m\u001b[1m\u001b[38;5;14mhelp\u001b[0m\u001b[0m: consider importing one of these items\u001b[0m
 \u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m|\u001b[0m
 \u001b[0m\u001b[1m\u001b[38;5;12mLL\u001b[0m\u001b[0m \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m| \u001b[0m\u001b[0muse std::collections::binary_heap::Iter;\u001b[0m
 \u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m|\u001b[0m
@@ -395,7 +395,7 @@ mod foo {
 \u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m|\u001b[0m
 \u001b[0m\u001b[1m\u001b[38;5;12mLL\u001b[0m\u001b[0m \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m| \u001b[0m\u001b[0muse std::collections::hash_map::Iter;\u001b[0m
 \u001b[0m   \u001b[0m\u001b[0m\u001b[1m\u001b[38;5;12m|\u001b[0m
-\u001b[0mand 8 other candidates\u001b[0m
+\u001b[0m     and 8 other candidates\u001b[0m
 
 "
 }
@@ -412,7 +412,7 @@ mod foo {
 {
   "message": "For more information about this error, try `rustc --explain E0412`.",
   "code": null,
-  "level": "",
+  "level": "failure-note",
   "spans": [],
   "children": [],
   "rendered": "\u001b[0m\u001b[1mFor more information about this error, try `rustc --explain E0412`.\u001b[0m
